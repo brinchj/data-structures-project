@@ -1,10 +1,15 @@
 
 
+
+
 data Heap = Heap {
         mini     :: Int
       , size     :: Int
       , children :: [Heap]
-} deriving (Show)
+} deriving (Eq, Show)
+
+instance (Ord Heap) where
+    h < h' = (mini h) < (mini h')
 
 
 empty = Heap { mini=(-1), size=0, children=[] }
@@ -15,13 +20,13 @@ is_empty h = (size h) == 0
 
 merge' hA hB =
     let (hA' , hB') =
-            if mini hA < mini hB then (hA, hB) else (hB, hA) in
+            if hA < hB then (hA, hB) else (hB, hA) in
     let m  = mini hA'
         s  = (size hA') + (size hB')
         cl = [hB'] ++ (children hA') in Heap m s cl
 merge hA hB =
-    if is_empty hA then hB
-    else if is_empty hB then hA else merge' hA hB
+    if is_empty hA then hB else if is_empty hB then hA
+                                else merge' hA hB
 
 
 merge_many (h:[]) = h
@@ -56,4 +61,4 @@ benchmark h m n =
 
 
 main = do
-  putStr (show (benchmark heap0 10000 10000))
+  putStr (show (benchmark heap0 100 100))
