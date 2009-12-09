@@ -1,4 +1,7 @@
-
+import Data.Monoid
+import System.Random
+import qualified Data.Sequence as S
+import qualified List
 
 
 {-
@@ -13,8 +16,9 @@ data Heap = Heap {
 instance (Ord Heap) where
     a < b = (mini a) < (mini b)
 
-instance (Num Heap) where
-    a + b = merge a b
+instance (Monoid Heap) where
+    mempty  = Heap (-1) 0 []
+    mappend = merge
 
 
 {-
@@ -44,11 +48,29 @@ merge hA hB =
     if is_empty hA then hB else if is_empty hB then hA
                                 else merge' hA hB
 
--- Merge a list/queue of heaps using multi-pass
-merge_many :: [Heap] -> Heap
-merge_many (h:[]) = h
-merge_many (h0:h1:tl) =
-    merge_many (tl ++ [h0 + h1])
+-- Generic merger - strategy lies in case of empty input list
+merger_create :: ([Heap] -> Heap) -> [Heap] -> [Heap] -> Heap
+merger_create f [] []  = mempty
+merger_create f [] [h] = h
+merger_create f [h] [] = h
+merger_create f []  q  = f q
+merger_create f [h] q  = f (h:q)
+merger_create f (h0:h1:hs) q =
+    merger_create f hs $! ((mappend h0 h1):q)
+
+-- Merge a list/queue of heaps using multiple (n) passes
+merge_npass hs =
+    let f = \q -> merger_create f (List.reverse q) [] in
+    merger_create f hs []
+
+-- Merge a list/queue of heaps using two passes
+merge_2pass hs =
+    let f = \q -> mconcat q in
+    merger_create f hs []
+
+-- Switch between 2pass/npass here
+merger = merge_npass
+
 
 -- Insert an element
 insert :: Heap -> Int -> Heap
@@ -58,25 +80,30 @@ insert h e =
 -- Extract minimum
 extract_min :: Heap -> (Heap, Int)
 extract_min h =
-    (merge_many (children h), mini h)
+    if is_empty h then (h, -1) else
+        (merger (children h), mini h)
 
 
 -- Tests
-test_insert h m 0 = h
-test_insert h m n =
-    test_insert (insert h (m-n+1)) m $! (n-1)
+randomList :: (Random a) => Int -> Int -> [a]
+randomList seed m = take m (randoms (mkStdGen seed))
+
+test_insert :: Heap -> [Int] -> Heap
+test_insert h []     = h
+test_insert h (e:tl) =
+    test_insert (insert h e) $! tl
 
 test_extract_min h 0 = h
 test_extract_min h n =
     let (h', m) = extract_min $! h in
     test_extract_min h' $! (n-1)
 
-benchmark h m n =
-    let h' = test_insert h m n in
-    test_extract_min h' n
+benchmark h m =
+    let h' = test_insert h $! (randomList 42 m) in
+    test_extract_min h' m
 
 
 -- Main
-heap0 = Heap 1 4 [ Heap 2 1 [] , Heap 3 1 [], Heap 4 1 []]
+heap0 = Heap 91 4 [ Heap 2 1 [] , Heap 3 1 [], Heap 4 1 []]
 main = do
-  putStr (show (benchmark heap0 100 100))
+  putStr (show (benchmark heap0 20000))
