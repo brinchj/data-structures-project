@@ -9,13 +9,17 @@ data Heap = Heap {
 } deriving (Eq, Show)
 
 instance (Ord Heap) where
-    h < h' = (mini h) < (mini h')
+    a < b = (mini a) < (mini b)
+
+instance (Num Heap) where
+    a + b = merge a b
+
+is_empty h = (size h) == 0
+
 
 
 empty = Heap { mini=(-1), size=0, children=[] }
 
-
-is_empty h = (size h) == 0
 
 
 merge' hA hB =
@@ -23,7 +27,7 @@ merge' hA hB =
             if hA < hB then (hA, hB) else (hB, hA) in
     let m  = mini hA'
         s  = (size hA') + (size hB')
-        cl = [hB'] ++ (children hA') in Heap m s cl
+        cl = hB':(children hA') in Heap m s cl
 merge hA hB =
     if is_empty hA then hB else if is_empty hB then hA
                                 else merge' hA hB
@@ -31,7 +35,7 @@ merge hA hB =
 
 merge_many (h:[]) = h
 merge_many (h0:h1:tl) =
-    merge_many (tl ++ [merge h0 h1])
+    merge_many (tl ++ [h0 + h1])
 
 
 insert h e =
