@@ -4,14 +4,31 @@
 #include <stdio.h>
 #include <vector>
 
+
+// Macro's to hide template code
 #define _PQTN typename
 #define _PQ_TEMPLATE template <_PQTN V, _PQTN C, _PQTN A, _PQTN E, _PQTN P>
 #define _PQ_TYPE     priority_queue<V, C, A, E, P>
 #define _PQ_CONS     _PQ_TEMPLATE _PQ_TYPE
 
+// return value is simple (int, char* etc.)
 #define _PQ_RET(T) _PQ_TEMPLATE typename _PQ_TYPE::T priority_queue<V, C, A, E, P>
+// return value is template parameter (V, E* etc.)
 #define _PQ_RET_TEMPL(T) _PQ_TEMPLATE T priority_queue<V, C, A, E, P>
+// return value is void
 #define _PQ_RET_VOID _PQ_RET_TEMPL(void)
+
+
+#define DEBUG
+
+
+#ifdef DEBUG
+#define ASSERT(x) assert(x)
+#else
+#define ASSERT(x)
+#endif
+
+
 
 namespace cphstl {
 		_PQ_CONS::priority_queue(
@@ -61,8 +78,10 @@ namespace cphstl {
 
 		// Modifiers
 
+		/* Insert element */
 		_PQ_RET_VOID::insert(E* p) {
 				//printf("insert: %i\n", p->element());
+				ASSERT(p != NULL);
 				// heap is empty
 				if(size_ == 0) {
 						top_ = p;
@@ -75,31 +94,37 @@ namespace cphstl {
 				return;
 		}
 
+		/* Increase value of element */
 		_PQ_RET_VOID::increase(E* p, V const& v) {
 				//printf("INCR: %i -> %i\n", p->element(), v);
+
+				ASSERT(p != NULL);
+				ASSERT(comparator(p->element(), v));
+
 				p->value_ = v;
 
-				if(p != top_) {
-						// remove p from child-list
-						if(p->left_->child_ && p->left_->child_==p) {
-								// p is left-most child
-								p->left_->child_ = p->right_;
-								if(p->right_)
-										p->right_->left_ = p->left_;
-						} else if (p->right_ == NULL) {
-								// p is right-most child
-								p->left_->right_ = NULL;
-						} else {
-								// p is inside child list
-								p->left_->right_ = p->right_;
+				// if p is top we're done
+				if(p == top_) return;
+
+				// remove p from child-list
+				if(p->left_->child_ && p->left_->child_==p) {
+						// p is left-most child (left is parent)
+						p->left_->child_ = p->right_;
+						if(p->right_) {
 								p->right_->left_ = p->left_;
 						}
-
-						// reinsert p
-						p->left_ = p->right_ = NULL;
-						top_ = meld_nodes(top_, p);
+				} else if (p->right_ == NULL) {
+						// p is right-most child
+						p->left_->right_ = NULL;
+				} else {
+						// p is somewhere inside child list
+						p->left_->right_ = p->right_;
+						p->right_->left_ = p->left_;
 				}
 
+				// reinsert p
+				p->left_ = p->right_ = NULL;
+				top_ = meld_nodes(top_, p);
 		}
 
 		_PQ_RET_TEMPL(E*)::extract() {
