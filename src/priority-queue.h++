@@ -27,19 +27,12 @@ namespace cphstl {
         public:
 
                 // types
-
-                typedef V value_type;
-                typedef C comparator_type;
-                typedef A allocator_type;
-                typedef P component_type;
                 typedef std::size_t size_type;
-                typedef V& reference;
-                typedef V const& const_reference;
 
                 // structors
 
-                explicit priority_queue(C const& = C(), A const& = A());
-                ~priority_queue();
+                explicit priority_queue(C const& = C(), A const& = A()) {}
+                ~priority_queue() {}
 
                 // iterators
 
@@ -64,57 +57,15 @@ namespace cphstl {
                 void swap(priority_queue&);
 
 
-				void show_heap(E* node, int lvl) {
-						if(node == NULL) return;
-						printf("> %i -> %i\n", lvl, node->element());
-						E* child = node->child_;
-						while(child != NULL) {
-								show_heap(child, lvl+1);
-								child = child->right_;
-						}
-				}
-
-				void show() {
-						printf(">> HEAP:\n");
-						show_heap(top_, 0);
-						printf("<<\n");
-				}
-
-        protected:
+        private:
 
                 C comparator;
                 A allocator;
                 E* top_;
                 size_type size_;
+				E* auxlist;
+				E* auxlist_last;
 
-				E* meld_nodes(E* a, E* b) {
-						// make sure a is smallest
-						if(comparator(a->element(), b->element())){
-								E* tmp = a;
-								a = b;
-								b = tmp;
-						}
-						// set a as root and b as child
-						b->right_ = a->child_;
-						if(a->child_) {
-								a->child_->left_ = b;
-						}
-						/*printf("A: %i (%p)\n", a->element(), a);
-						  printf("B: %i (%p)\n", b->element(), b);*/
-						b->left_ = a;
-						a->child_ = b;
-						a->left_ = a->right_ = NULL;
-						/*printf("a->child: %p\n", a->child_);
-						printf("a->right: %p\n", a->right_);
-						printf("B->child: %p\n", b->child_);
-						printf("B->right: %p\n", b->right_);*/
-						return a;
-				}
-
-        private:
-
-                priority_queue(priority_queue const&);
-                priority_queue& operator=(priority_queue const&);
         };
 
 }
