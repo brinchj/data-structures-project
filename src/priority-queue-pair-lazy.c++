@@ -13,21 +13,22 @@
 
 
 namespace cphstl {
-
         template <
-                typename V,
+				typename V,
                 typename C = std::less<V>,
                 typename A = std::allocator<V>,
                 typename E = heap_node<V, A>,
                 typename P = perfect_component<E>
                 >
         class priority_queue_pair_lazy : public priority_queue_pair<V,C,A,E,P> {
-		public:
+        public:
 
                 typedef size_t size_type;
 
                 priority_queue_pair_lazy(C const& c, A const& a)
-                        : comparator(c), allocator(a), top_(NULL), size_(0) {
+                        : comparator(c), allocator(a) {
+												top_ = NULL;
+												size_ = 0;
                 }
 
                 ~priority_queue_pair_lazy() {
@@ -43,7 +44,8 @@ namespace cphstl {
                                 return;
                         }
                         if(auxlist == NULL) {
-                                auxlist = auxlist_last = p;
+                                auxlist =
+                                        auxlist_last = p;
                         } else {
                                 p->left_  = auxlist_last;
                                 p->right_ = NULL;
@@ -51,7 +53,7 @@ namespace cphstl {
                                 auxlist_last = p;
                         }
 
-                        ++size_;
+                        size_ += 1;
                         //show();
                         return;
                 }
@@ -90,7 +92,7 @@ namespace cphstl {
                 }
 
                 E* extract() {
-                        //printf("extract: %ld\n", size_);
+                        printf("extract: %ld\n", size_);
                         if(size_ == 0) {
                                 return NULL;
                         } else if (size_ == 1) {
@@ -100,28 +102,36 @@ namespace cphstl {
 
 
                         // process waiting nodes
-                        while(auxlist != auxlist_last) {
+                        while(auxlist !=
+                              auxlist_last) {
+
+                                printf("%i\n", auxlist->element());
                                 // cut first two elements from list
                                 E* first = auxlist;
-                                auxlist = auxlist->right_->right_;
+                                auxlist =
+                                        auxlist->right_->right_;
 
                                 // meld first two nodes
                                 E* node = meld_nodes(first, first->right_);
                                 // insert new node as last in list
                                 if(auxlist == NULL) {
+                                        printf("NULL\n");
                                         auxlist = node;
                                         break;
-                                } else {
-                                        node->left_ = auxlist_last;
-                                        node->right_ = NULL;
-                                        auxlist_last->right_ = node;
-                                        auxlist_last = node;
                                 }
+                                node->left_ = auxlist_last;
+                                node->right_ = NULL;
+                                auxlist_last->right_ = node;
+																auxlist_last = node;
                         }
 
+                        printf("%p\n", auxlist);
                         if(auxlist != NULL) {
-                                top_ = meld_nodes(top_, auxlist);
-                                auxlist = auxlist_last = NULL;
+                                top_ =
+																				meld_nodes(top_,
+																									 auxlist);
+                                auxlist =
+																				auxlist_last = NULL;
                         }
 
 
@@ -159,17 +169,20 @@ namespace cphstl {
                                 node = next;
                         }
 
-                        --size_;
+                        size_ += 1;
+                        printf("size_: %i\n", size_);
                         return min;
                 }
 
-        private:
-                size_type size_;
+				protected:
+								size_type size_;
+								E* top_;
+								E* auxlist;
+								E* auxlist_last;
+
+				private:
                 C comparator;
                 A allocator;
-                E* top_;
-                E* auxlist;
-                E* auxlist_last;
         };
 }
 

@@ -27,50 +27,22 @@ namespace cphstl {
                 typename P = perfect_component<E>
                 >
         class priority_queue_pair : public priority_queue<V,C,A,E,P> {
-		public:
+				public:
+
+								typedef priority_queue<V,C,A,E,P> PQ;
+
+
                 // types
                 typedef std::size_t size_type;
 
                 priority_queue_pair(C const& c, A const& a)
-                        : comparator(c), allocator(a), top_(NULL), size_(0) {
+                        : comparator(c), allocator(a) {
+												PQ::top_ = NULL;
+												PQ::size_ = 0;
                 }
 
                 ~priority_queue_pair() {
                         // precondition: The data structure contains no elements
-                }
-
-                // Accessors
-                void begin() const {
-                        if(size_ == 0) {
-                                return NULL;
-                        }
-                        return top_;
-                }
-
-                void end() const {
-                        return NULL;
-                }
-
-                A* get_allocator() const {
-                        return allocator;
-                }
-
-                C* get_comparator() const {
-                        return comparator;
-                }
-
-                int size() const {
-                        return size_;
-                }
-
-                int max_size() const {
-                        typename std::vector<int, A>::allocator_type a;
-                        size_type available_memory = a.max_size() * sizeof(int);
-                        return available_memory / E::footprint();
-                }
-
-                E* top()const {
-                        return top_;
                 }
 
 
@@ -81,13 +53,13 @@ namespace cphstl {
                         //printf("insert: %i\n", p->element());
                         ASSERT(p != NULL);
                         // heap is empty
-                        if(size_ == 0) {
-                                top_ = p;
-                                size_ = 1;
+                        if(PQ::size_ == 0) {
+                                PQ::top_ = p;
+                                PQ::size_ = 1;
                                 return;
                         }
-                        top_ = meld_nodes(top_, p);
-                        ++size_;
+                        PQ::top_ = meld_nodes(PQ::top_, p);
+                        ++PQ::size_;
                         //show();
                         return;
                 }
@@ -102,7 +74,7 @@ namespace cphstl {
                         p->value_ = v;
 
                         // if p is top we're done
-                        if(p == top_) return;
+                        if(p == PQ::top_) return;
 
                         // remove p from child-list
                         if(p->left_->child_ && p->left_->child_==p) {
@@ -122,23 +94,23 @@ namespace cphstl {
 
                         // reinsert p
                         p->left_ = p->right_ = NULL;
-                        top_ = meld_nodes(top_, p);
+                        PQ::top_ = meld_nodes(PQ::top_, p);
                 }
 
                 E* extract() {
-                        //printf("extract: %ld\n", size_);
-                        if(size_ == 0) {
+                        //printf("extract: %ld\n", PQ::size_);
+                        if(PQ::size_ == 0) {
                                 return NULL;
-                        } else if (size_ == 1) {
-                                size_ = 0;
-                                return top_;
+                        } else if (PQ::size_ == 1) {
+                                PQ::size_ = 0;
+                                return PQ::top_;
                         }
 
-                        E* min = top_;
+                        E* min = PQ::top_;
                         E* list = NULL;
 
                         // iterate through children
-                        E* node = top_->child_;
+                        E* node = PQ::top_->child_;
                         while(node != NULL) {
                                 if(node->right_ == NULL) {
                                         break;
@@ -160,21 +132,21 @@ namespace cphstl {
                         }
 
                         // merge element in list
-                        top_ = list;
+                        PQ::top_ = list;
                         node = list->right_;
                         while(node != NULL) {
                                 E* next = node->right_;
-                                top_ = meld_nodes(top_, node);
+                                PQ::top_ = meld_nodes(PQ::top_, node);
                                 node = next;
                         }
 
-                        --size_;
+                        --PQ::size_;
                         return min;
                 }
 
                 void meld(priority_queue_pair& other) {
-                        size_ += other.size_;
-                        top_ = meld_nodes(top_, other.top_);
+                        PQ::size_ += other.PQ::size_;
+                        PQ::top_ = meld_nodes(PQ::top_, other.PQ::top_);
                 }
 
                 void swap(priority_queue_pair& other) {
@@ -182,16 +154,16 @@ namespace cphstl {
                         size_type newsize = other.size_;
                         other.top_  = newtop;
                         other.size_ = newsize;
-                        top_  = newtop;
-                        size_ = newsize;
+												PQ::top_  = newtop;
+                        PQ::size_ = newsize;
                 }
 
-		protected:
+//		protected:
                 priority_queue_pair() {}
 
 				void show() {
 						printf(">> HEAP:\n");
-						show_heap(top_, 0);
+						show_heap(PQ::top_, 0);
 						printf("<<\n");
 				}
 
@@ -223,13 +195,9 @@ namespace cphstl {
 						return a;
 				}
 
-		private:
+				protected:
                 C comparator;
                 A allocator;
-                E* top_;
-                size_type size_;
-				E* auxlist;
-				E* auxlist_last;
         };
 }
 #endif

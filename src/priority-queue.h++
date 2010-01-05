@@ -12,11 +12,12 @@
 #include <cstddef> // std::size_t and std::ptrdiff_t
 #include <functional> // std::less
 #include <memory> // std::allocator
+#include <vector>
 #include "priority-queue-node.h++"
 #include "perfect-component.h++"
 
 namespace cphstl {
-        template <
+				template <
                 typename V,
                 typename C = std::less<V>,
                 typename A = std::allocator<V>,
@@ -34,18 +35,43 @@ namespace cphstl {
                 explicit priority_queue(C const& = C(), A const& = A()) {}
                 ~priority_queue() {}
 
-                // iterators
-
-                E* begin() const;
-                E* end() const;
 
                 // accessors
 
-                A get_allocator() const;
-                C get_comparator() const;
-                size_type size() const;
-                size_type max_size() const;
-                E* top() const;
+
+                // Accessors
+                void begin() const {
+                        if(size_ == 0) {
+                                return NULL;
+                        }
+                        return top_;
+                }
+
+                void end() const {
+                        return NULL;
+                }
+
+                A* get_allocator() const {
+                        return allocator;
+                }
+
+                C* get_comparator() const {
+                        return comparator;
+                }
+
+                int size() const {
+                        return size_;
+                }
+
+                int max_size() const {
+                        typename std::vector<int, A>::allocator_type a;
+                        size_type available_memory = a.max_size() * sizeof(int);
+                        return available_memory / E::footprint();
+                }
+
+                E* top()const {
+                        return top_;
+                }
 
                 // modifiers
 
@@ -57,14 +83,14 @@ namespace cphstl {
                 void swap(priority_queue&);
 
 
-        private:
 
+				protected:
                 C comparator;
                 A allocator;
                 E* top_;
                 size_type size_;
-				E* auxlist;
-				E* auxlist_last;
+								E* auxlist;
+								E* auxlist_last;
 
         };
 

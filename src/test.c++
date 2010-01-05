@@ -30,7 +30,7 @@ int main() {
 
         assert(pq->size() == 0);
 
-        const int N = 1024*1024*16;
+        const int N = 8;
 
         int i;
         _E* node;
@@ -39,7 +39,7 @@ int main() {
         for(i = N; i > 0; i-=4) {
                 int v = i;
                 //printf("insert: %i\n", v);
-                pq->insert(new _E(v,a));
+                pq->insert(new _E(v+1,a));
                 pq->insert(new _E(v+2,a));
                 node = new _E(v,a);
                 pq->insert(node);
@@ -48,7 +48,7 @@ int main() {
                 //pq->increase(node, v+1);
                 //pq.show();
 
-                //assert(pq.size() == N-i+1);
+                assert(pq->size() == N-i+4);
         }
 
         printf("EXTRACT\n");
