@@ -8,13 +8,6 @@
 
 #define DEBUG
 
-
-#ifdef DEBUG
-#define ASSERT(x) assert(x)
-#else
-#define ASSERT(x)
-#endif
-
 #ifndef PRIORITY_QUEUE_PAIR
 #define PRIORITY_QUEUE_PAIR
 
@@ -51,7 +44,7 @@ namespace cphstl {
                 /* Insert element */
                 void insert(E* p) {
                         //printf("insert: %i\n", p->element());
-                        ASSERT(p != NULL);
+                        assert(p != NULL);
                         // heap is empty
                         if(PQ::size_ == 0) {
                                 PQ::top_ = p;
@@ -68,8 +61,8 @@ namespace cphstl {
                 void increase(E* p, V const& v) {
                         //printf("INCR: %i -> %i\n", p->element(), v);
 
-                        ASSERT(p != NULL);
-                        ASSERT(comparator(p->element(), v));
+                        assert(p != NULL);
+                        assert(comparator(p->element(), v));
 
                         p->value_ = v;
 

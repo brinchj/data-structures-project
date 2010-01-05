@@ -64,8 +64,8 @@ namespace cphstl {
                 void increase(E* p, V const& v) {
                         //printf("INCR: %i -> %i\n", p->element(), v);
 
-                        ASSERT(p != NULL);
-                        ASSERT(comparator(p->element(), v));
+                        assert(p != NULL);
+                        assert(comparator(p->element(), v));
 
                         p->value_ = v;
 
