@@ -59,7 +59,7 @@ namespace cphstl {
                                 return;
                         }
                         PQ::top_ = meld_nodes(PQ::top_, p);
-                        ++PQ::size_;
+                        PQ::size_ += 1;
                         //show();
                         return;
                 }
@@ -140,7 +140,7 @@ namespace cphstl {
                                 node = next;
                         }
 
-                        --PQ::size_;
+                        PQ::size_ -= 1;
                         return min;
                 }
 

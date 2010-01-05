@@ -23,12 +23,14 @@ namespace cphstl {
         class priority_queue_pair_lazy : public priority_queue_pair<V,C,A,E,P> {
         public:
 
-                typedef size_t size_type;
+								typedef priority_queue<V,C,A,E,P> PQ;
+								typedef priority_queue_pair<V,C,A,E,P> PQP;
+
 
                 priority_queue_pair_lazy(C const& c, A const& a)
                         : comparator(c), allocator(a) {
-												top_ = NULL;
-												size_ = 0;
+												PQ::top_ = NULL;
+												PQ::size_ = 0;
                 }
 
                 ~priority_queue_pair_lazy() {
@@ -38,22 +40,22 @@ namespace cphstl {
                 /* Insert element */
                 void insert(E* p) {
                         // heap is empty
-                        if(size_ == 0) {
-                                top_ = p;
-                                size_ = 1;
+                        if(PQ::size_ == 0) {
+                                PQ::top_ = p;
+                                PQ::size_ = 1;
                                 return;
                         }
-                        if(auxlist == NULL) {
-                                auxlist =
-                                        auxlist_last = p;
+                        if(PQ::auxlist == NULL) {
+                                PQ::auxlist =
+                                        PQ::auxlist_last = p;
                         } else {
-                                p->left_  = auxlist_last;
+                                p->left_  = PQ::auxlist_last;
                                 p->right_ = NULL;
-                                auxlist_last->right_ = p;
-                                auxlist_last = p;
+                                PQ::auxlist_last->right_ = p;
+                                PQ::auxlist_last = p;
                         }
 
-                        size_ += 1;
+                        PQ::size_ += 1;
                         //show();
                         return;
                 }
@@ -68,7 +70,7 @@ namespace cphstl {
                         p->value_ = v;
 
                         // if p is top we're done
-                        if(p == top_) return;
+                        if(p == PQ::top_) return;
 
                         // remove p from child-list
                         if(p->left_->child_ && p->left_->child_==p) {
@@ -88,99 +90,51 @@ namespace cphstl {
 
                         // reinsert p
                         p->left_ = p->right_ = NULL;
-                        top_ = meld_nodes(top_, p);
+
+												// insert last in auxlist
+												insert(p);
+												PQ::size_ -= 1;
                 }
 
                 E* extract() {
-                        printf("extract: %ld\n", size_);
-                        if(size_ == 0) {
+                        //printf("extract: %ld\n", PQ::size_);
+                        if(PQ::size_ == 0) {
                                 return NULL;
-                        } else if (size_ == 1) {
-                                size_ = 0;
-                                return top_;
+                        } else if (PQ::size_ == 1) {
+                                PQ::size_ = 0;
+                                return PQ::top_;
                         }
 
 
                         // process waiting nodes
-                        while(auxlist !=
-                              auxlist_last) {
-
-                                printf("%i\n", auxlist->element());
+                        while(PQ::auxlist != PQ::auxlist_last) {
                                 // cut first two elements from list
-                                E* first = auxlist;
-                                auxlist =
-                                        auxlist->right_->right_;
+                                E* first = PQ::auxlist;
+                                PQ::auxlist =
+                                        PQ::auxlist->right_->right_;
 
                                 // meld first two nodes
                                 E* node = meld_nodes(first, first->right_);
                                 // insert new node as last in list
-                                if(auxlist == NULL) {
-                                        printf("NULL\n");
-                                        auxlist = node;
+                                if(PQ::auxlist == NULL) {
+                                        PQ::auxlist = node;
                                         break;
                                 }
-                                node->left_ = auxlist_last;
+                                node->left_ = PQ::auxlist_last;
                                 node->right_ = NULL;
-                                auxlist_last->right_ = node;
-																auxlist_last = node;
+                                PQ::auxlist_last->right_ = node;
+																PQ::auxlist_last = node;
                         }
 
-                        printf("%p\n", auxlist);
-                        if(auxlist != NULL) {
-                                top_ =
-																				meld_nodes(top_,
-																									 auxlist);
-                                auxlist =
-																				auxlist_last = NULL;
+                        if(PQ::auxlist != NULL) {
+                                PQ::top_ = meld_nodes(PQ::top_, PQ::auxlist);
+                                PQ::auxlist = PQ::auxlist_last = NULL;
                         }
 
-
-                        E* min = top_;
-                        E* list = NULL;
-
-                        // iterate through children
-                        E* node = top_->child_;
-                        while(node != NULL) {
-                                if(node->right_ == NULL) {
-                                        break;
-                                }
-                                E* next = node->right_->right_;
-                                // merge with first in list
-                                node = meld_nodes(node, node->right_);
-                                // set merged node as first in list
-                                node->right_ = list;
-                                list = node;
-                                // move to next child
-                                node = next;
-                        }
-
-                        // prepend last element to list
-                        if(node != NULL) {
-                                node->right_ = list;
-                                list = node;
-                        }
-
-                        // merge element in list
-                        top_ = list;
-                        node = list->right_;
-                        while(node != NULL) {
-                                E* next = node->right_;
-                                top_ = meld_nodes(top_, node);
-                                node = next;
-                        }
-
-                        size_ += 1;
-                        printf("size_: %i\n", size_);
-                        return min;
+												return PQP::extract();
                 }
 
 				protected:
-								size_type size_;
-								E* top_;
-								E* auxlist;
-								E* auxlist_last;
-
-				private:
                 C comparator;
                 A allocator;
         };

@@ -8,4 +8,4 @@ test: test.c++ priority-queue.h++ priority-queue-pair.c++ priority-queue-pair-la
 	g++ -I${INC} ${CFLAGS} -o test test.c++
 
 clean:
-	rm *.o
+	rm test
