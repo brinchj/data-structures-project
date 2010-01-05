@@ -1,5 +1,5 @@
 
-#define PAIR_LAZY
+#define PAIR
 
 #ifdef PAIR
 #include "priority-queue-pair.c++"
