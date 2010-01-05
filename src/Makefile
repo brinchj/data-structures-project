@@ -1,14 +1,11 @@
+all: test
 
-all: cphstl hpp cpp
+CFLAGS=-O2
+INC=cphstl
 
-cphstl:
-	./scripts/cphstl.sh
 
-hpp:
-	./scripts/hpp.sh
-
-cpp:
-	./scripts/cpp.sh
+test: test.c++
+	g++ -I${INC} ${CFLAGS} -o test test.c++
 
 clean:
 	rm *.o
