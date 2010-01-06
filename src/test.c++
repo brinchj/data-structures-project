@@ -30,33 +30,38 @@ int main() {
 
   assert(pq->size() == 0);
 
-  const int N = 1024*1024*16;
+  const int N = 1024*32;
+  const int M = 1024*32;
 
-  int i;
+  int i,j;
   _E* node;
 
   printf("INSERT\n");
-  for(i = N; i > 0; i-=4) {
+  for(i = N; i > 0; i-=M) {
     int v = i;
-    //printf("insert: %i\n", v);
-    pq->insert(new _E(v,a));
-    pq->insert(new _E(v+2,a));
-    node = new _E(v,a);
-    pq->insert(node);
-    pq->insert(new _E(v+3,a));
-
-    pq->increase(node, v+1);
-    //pq.show();
-
-    assert(pq->size() == N-i+4);
+    _E *nodes[M];
+    for(j = 0; j < M; j++) {
+      nodes[j] = new _E(0, a);
+      pq->insert(nodes[j]);
+    }
+    for(j = 0; j < M; j++) {
+      pq->increase(nodes[j], M-j);
+    }
+    for(j = 0; j < M; j++) {
+      //printf("%i %i\n", M-j, N-i-j+M+1);
+      pq->increase(nodes[j], N-i-j+M+1);
+    }
+    assert(pq->size() == N-i+M);
   }
 
   printf("EXTRACT\n");
   node = pq->extract();
+  //printf("extract: %i\n", node->element());
 
   _V prev = node->element();
   int count = 1;
   while(pq->size() > 0) {
+    free(node);
     node = pq->extract();
     assert(node != NULL);
     //printf("extract: %i\n", node->element());
@@ -64,10 +69,12 @@ int main() {
     prev = node->element();
     ++count;
   }
+  free(node);
 
   printf("%i %i\n", count, N);
   assert(count == N);
 
+  free(pq);
   printf("done.\n");
 }
 

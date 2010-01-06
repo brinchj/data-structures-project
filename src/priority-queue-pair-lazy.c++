@@ -56,6 +56,8 @@ namespace cphstl {
         PQ::auxlist_last->right_ = p;
         PQ::auxlist_last = p;
       }
+      p->color_ = 1;
+
       if(PQ::min_ == NULL ||
          comparator(PQ::min_->element(), p->element())) {
           PQ::min_ = p;
@@ -74,8 +76,8 @@ namespace cphstl {
 
       p->value_ = v;
 
-      // if p is top we're done
-      if(p == PQ::top_) return;
+      // if p is top or already in auxlist we're done
+      if(p == PQ::top_ || p->color_ == 1) return;
 
       // remove p from child-list
       if(p->left_->child_ && p->left_->child_==p) {
@@ -124,6 +126,7 @@ namespace cphstl {
           PQ::auxlist->right_->right_;
 
         // meld first two nodes
+        first->color_ = first->right_->color_ = 0;
         E* node = meld_nodes(first, first->right_);
         // insert new node as last in list
         if(PQ::auxlist == NULL) {
@@ -137,6 +140,7 @@ namespace cphstl {
       }
 
       if(PQ::auxlist != NULL) {
+        PQ::auxlist->color_ = 0;
         PQ::top_ = meld_nodes(PQ::top_, PQ::auxlist);
         PQ::auxlist = PQ::auxlist_last = NULL;
       }

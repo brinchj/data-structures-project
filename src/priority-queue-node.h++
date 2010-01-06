@@ -26,8 +26,8 @@ namespace cphstl {
     self_t* left_;
     self_t* right_;
     self_t* child_;
+    int color_;
     V value_;
-
 
   private:
 
@@ -38,7 +38,7 @@ namespace cphstl {
   public:
 
     heap_node(V const& v, A const&)
-      : left_(NULL), right_(NULL), child_(NULL), value_(v) {
+      : left_(NULL), right_(NULL), child_(NULL), color_(0), value_(v) {
     }
 
     static size_type footprint() {

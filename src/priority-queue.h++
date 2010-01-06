@@ -17,82 +17,84 @@
 #include "perfect-component.h++"
 
 namespace cphstl {
-				template <
-                typename V,
-                typename C = std::less<V>,
-                typename A = std::allocator<V>,
-                typename E = heap_node<V, A>,
-                typename P = perfect_component<E>
-                >
-        class priority_queue {
-        public:
+  template <
+    typename V,
+    typename C = std::less<V>,
+    typename A = std::allocator<V>,
+    typename E = heap_node<V, A>,
+    typename P = perfect_component<E>
+    >
+  class priority_queue {
+  public:
 
-                // types
-                typedef std::size_t size_type;
+    // types
+    typedef std::size_t size_type;
 
-                // structors
+    // structors
 
-                explicit priority_queue(C const& = C(), A const& = A()) {}
-                ~priority_queue() {}
-
-
-                // accessors
+    explicit priority_queue(C const& = C(), A const& = A()) {}
+    ~priority_queue() {}
 
 
-                // Accessors
-                void begin() const {
-                        if(size_ == 0) {
-                                return NULL;
-                        }
-                        return top_;
-                }
-
-                void end() const {
-                        return NULL;
-                }
-
-                A* get_allocator() const {
-                        return allocator;
-                }
-
-                C* get_comparator() const {
-                        return comparator;
-                }
-
-                int size() const {
-                        return size_;
-                }
-
-                int max_size() const {
-                        typename std::vector<int, A>::allocator_type a;
-                        size_type available_memory = a.max_size() * sizeof(int);
-                        return available_memory / E::footprint();
-                }
-
-                E* top()const {
-                        return top_;
-                }
-
-                // modifiers
-
-                void insert(E*);
-                E* extract();
-                void extract(E*);
-                void increase(E*, V const&);
-                void meld(priority_queue&);
-                void swap(priority_queue&);
+    // accessors
 
 
+    // Accessors
+    void begin() const {
+      if(size_ == 0) {
+        return NULL;
+      }
+      return top_;
+    }
 
-				protected:
-                C comparator;
-                A allocator;
-                E* top_;
-                size_type size_;
-								E* auxlist;
-								E* auxlist_last;
+    void end() const {
+      return NULL;
+    }
 
-        };
+    A* get_allocator() const {
+      return allocator;
+    }
+
+    C* get_comparator() const {
+      return comparator;
+    }
+
+    int size() const {
+      return size_;
+    }
+
+    int max_size() const {
+      typename std::vector<int, A>::allocator_type a;
+      size_type available_memory = a.max_size() * sizeof(int);
+      return available_memory / E::footprint();
+    }
+
+    E* find_min() const {
+      return min_;
+    }
+
+    // modifiers
+
+    void insert(E*);
+    E* extract();
+    void extract(E*);
+    void increase(E*, V const&);
+    void meld(priority_queue&);
+    void swap(priority_queue&);
+
+
+
+  protected:
+    C comparator;
+    A allocator;
+
+    size_type size_;
+    E* auxlist;
+    E* auxlist_last;
+
+    E* min_;
+    E* top_;
+  };
 
 }
 

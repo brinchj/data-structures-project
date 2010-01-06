@@ -94,69 +94,19 @@ namespace cphstl {
         PQ::min_ = p;
       }
 
-      if(p != PQ::top_) {
+      if(p != PQ::top_ && p->color_ == 0) {
         // insert into list of increased nodes
-        increased_list_.push_back(p);
+        p->color_ = 1;
+        increased_list_.push_front(p);
       }
-
-      /**
-      // if p is top we're done
-      if(p == PQ::top_) return;
-
-      // reinsert p
-      p->left_ = p->right_ = NULL;
-      PQ::top_ = PQP::meld_nodes(PQ::top_, p);
-      **/
     }
 
     E* extract() {
       if(increased_list_.size() > 0)
         cleanup();
 
-      //printf("extract: %ld\n", PQ::size_);
-      if(PQ::size_ == 0) {
-        return NULL;
-      } else if (PQ::size_ == 1) {
-        PQ::size_ = 0;
-        return PQ::top_;
-      }
-
-      E* min = PQ::top_;
-      E* list = NULL;
-
-      // iterate through children
-      E* node = PQ::top_->child_;
-      while(node != NULL) {
-        if(node->right_ == NULL) {
-          break;
-        }
-        E* next = node->right_->right_;
-        // merge with first in list
-        node = PQP::meld_nodes(node, node->right_);
-        // set merged node as first in list
-        node->right_ = list;
-        list = node;
-        // move to next child
-        node = next;
-      }
-
-      // prepend last element to list
-      if(node != NULL) {
-        node->right_ = list;
-        list = node;
-      }
-
-      // merge element in list
-      PQ::top_ = list;
-      node = list->right_;
-      while(node != NULL) {
-        E* next = node->right_;
-        PQ::top_ = PQP::meld_nodes(PQ::top_, node);
-        node = next;
-      }
-
-      PQ::size_ -= 1;
-      return min;
+      PQ::min_ = PQP::extract();
+      return PQ::min_;
     }
 
     void meld(priority_queue_costless_meld& other) {
@@ -189,6 +139,7 @@ namespace cphstl {
       list_node<E*> *sentinel = increased_list_.end();
       while( (node = increased_list_.begin()) != sentinel) {
         increased_list_.erase(node);
+        node->content()->color_ = 0;
 
         E* p = node->content();
         assert(p != NULL);
@@ -259,6 +210,7 @@ namespace cphstl {
       }
       PQ::top_ = meld_nodes(PQ::top_, tree);
       PQ::min_ = PQ::top_;
+
     }
 
 
