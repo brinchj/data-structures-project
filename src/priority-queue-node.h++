@@ -1,7 +1,7 @@
 /*
-A heap node used as a base for various specialized heap nodes
+  A heap node used as a base for various specialized heap nodes
 
-Authors: Asger Bruun, Jyrki Katajainen © 2009
+  Authors: Asger Bruun, Jyrki Katajainen © 2009
 */
 
 #ifndef __CPHSTL_HEAP_NODE__
@@ -25,8 +25,9 @@ namespace cphstl {
 
     self_t* left_;
     self_t* right_;
-	self_t* child_;
+    self_t* child_;
     V value_;
+
 
   private:
 
@@ -37,7 +38,7 @@ namespace cphstl {
   public:
 
     heap_node(V const& v, A const&)
-			: left_(NULL), right_(NULL), child_(NULL), value_(v) {
+      : left_(NULL), right_(NULL), child_(NULL), value_(v) {
     }
 
     static size_type footprint() {
@@ -48,9 +49,9 @@ namespace cphstl {
       return left_ == right_ == 0;
     }
 
-	bool has_parent() const {
-			return left_->child_ == this;
-	}
+    bool has_parent() const {
+      return left_->child_ == this;
+    }
 
     bool is_leaf() const {
       return right_ == 0;
@@ -86,7 +87,7 @@ namespace cphstl {
 
     self_t*& parent() {
       return left_;
-	  }
+    }
   };
 }
 
