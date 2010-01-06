@@ -1,6 +1,6 @@
 all: test
 
-CFLAGS=-O2
+CFLAGS=-O2 -g -pg
 INC=cphstl
 
 
