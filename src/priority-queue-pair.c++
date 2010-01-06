@@ -39,6 +39,10 @@ namespace cphstl {
       // precondition: The data structure contains no elements
     }
 
+    // Accessors
+    E* find_min() {
+      return PQ::top_;
+    }
 
     // Modifiers
 

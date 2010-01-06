@@ -37,6 +37,9 @@ namespace cphstl {
       // precondition: The data structure contains no elements
     }
 
+
+    // MODIFIERS
+
     /* Insert element */
     void insert(E* p) {
       // heap is empty
@@ -46,15 +49,17 @@ namespace cphstl {
         return;
       }
       if(PQ::auxlist == NULL) {
-        PQ::auxlist =
-          PQ::auxlist_last = p;
+        PQ::auxlist = PQ::auxlist_last = p;
       } else {
         p->left_  = PQ::auxlist_last;
         p->right_ = NULL;
         PQ::auxlist_last->right_ = p;
         PQ::auxlist_last = p;
       }
-
+      if(PQ::min_ == NULL ||
+         comparator(PQ::min_->element(), p->element())) {
+          PQ::min_ = p;
+      }
       PQ::size_ += 1;
       //show();
       return;
@@ -93,6 +98,12 @@ namespace cphstl {
 
       // insert last in auxlist
       insert(p);
+
+      // update minimum
+      if(PQ::min_ == NULL ||
+         comparator(PQ::min_->element(), p->element())) {
+          PQ::min_ = p;
+      }
       PQ::size_ -= 1;
     }
 
@@ -104,7 +115,6 @@ namespace cphstl {
         PQ::size_ = 0;
         return PQ::top_;
       }
-
 
       // process waiting nodes
       while(PQ::auxlist != PQ::auxlist_last) {
@@ -131,7 +141,9 @@ namespace cphstl {
         PQ::auxlist = PQ::auxlist_last = NULL;
       }
 
-      return PQP::extract();
+      E* min = PQP::extract();
+      PQ::min_ = PQ::top_;
+      return min;
     }
 
   protected:

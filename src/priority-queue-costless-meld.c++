@@ -1,5 +1,4 @@
-#include "priority-queue.h++"
-#include "priority-queue-node.h++"
+#include "priority-queue-pair.c++"
 
 #include <stdio.h>
 #include <vector>
@@ -9,8 +8,8 @@
 
 #define DEBUG
 
-#ifndef PRIORITY_QUEUE_PAIR
-#define PRIORITY_QUEUE_PAIR
+#ifndef PRIORITY_QUEUE_COSTLESS_MELD
+#define PRIORITY_QUEUE_COSTLESS_MELD
 
 namespace cphstl {
   template <
@@ -21,17 +20,18 @@ namespace cphstl {
     typename P = perfect_component<E>
     >
   class priority_queue_costless_meld :
-    public priority_queue<V,C,A,E,P> {
+    public priority_queue_pair<V,C,A,E,P> {
   public:
 
     typedef priority_queue<V,C,A,E,P> PQ;
+    typedef priority_queue_pair<V,C,A,E,P> PQP;
 
 
     // types
     typedef std::size_t size_type;
 
     priority_queue_costless_meld(C const& c, A const& a)
-      : comparator(c), allocator(a) {
+      : comparator(c), allocator(a), decreased_list(NULL) {
       PQ::top_ = NULL;
       PQ::size_ = 0;
     }
@@ -53,9 +53,12 @@ namespace cphstl {
         PQ::size_ = 1;
         return;
       }
-      PQ::top_ = meld_nodes(PQ::top_, p);
+      PQ::top_ = PQP::meld_nodes(PQ::top_, p);
+      if(PQ::min_ == NULL ||
+         comparator(PQ::min_->element(), p->element())) {
+        PQ::min_ = p;
+      }
       PQ::size_ += 1;
-      //show();
       return;
     }
 
@@ -89,7 +92,7 @@ namespace cphstl {
 
       // reinsert p
       p->left_ = p->right_ = NULL;
-      PQ::top_ = meld_nodes(PQ::top_, p);
+      PQ::top_ = PQP::meld_nodes(PQ::top_, p);
     }
 
     E* extract() {
@@ -112,7 +115,7 @@ namespace cphstl {
         }
         E* next = node->right_->right_;
         // merge with first in list
-        node = meld_nodes(node, node->right_);
+        node = PQP::meld_nodes(node, node->right_);
         // set merged node as first in list
         node->right_ = list;
         list = node;
@@ -131,7 +134,7 @@ namespace cphstl {
       node = list->right_;
       while(node != NULL) {
         E* next = node->right_;
-        PQ::top_ = meld_nodes(PQ::top_, node);
+        PQ::top_ = PQP::meld_nodes(PQ::top_, node);
         node = next;
       }
 
@@ -141,7 +144,7 @@ namespace cphstl {
 
     void meld(priority_queue_costless_meld& other) {
       PQ::size_ += other.PQ::size_;
-      PQ::top_ = meld_nodes(PQ::top_, other.PQ::top_);
+      PQ::top_ = PQP::meld_nodes(PQ::top_, other.PQ::top_);
     }
 
     void swap(priority_queue_costless_meld& other) {
@@ -156,43 +159,12 @@ namespace cphstl {
 
     priority_queue_costless_meld() {}
 
-    void show() {
-      printf(">> HEAP:\n");
-      show_heap(PQ::top_, 0);
-      printf("<<\n");
-    }
-
-    void show_heap(E* node, int lvl) {
-      if(node == NULL) return;
-      printf("> %i -> %i\n", lvl, node->element());
-      E* child = node->child_;
-      while(child != NULL) {
-        show_heap(child, lvl+1);
-        child = child->right_;
-      }
-    }
-
-    E* meld_nodes(E* a, E* b) {
-      // make sure a is smallest
-      if(comparator(a->element(), b->element())){
-        E* tmp = a;
-        a = b;
-        b = tmp;
-      }
-      // set a as root and b as child
-      b->right_ = a->child_;
-      if(a->child_) {
-        a->child_->left_ = b;
-      }
-      b->left_ = a;
-      a->child_ = b;
-      a->left_ = a->right_ = NULL;
-      return a;
-    }
 
   protected:
     C comparator;
     A allocator;
+
+    E* decreased_list;
   };
 }
 #endif
