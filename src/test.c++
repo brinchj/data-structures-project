@@ -3,10 +3,17 @@
 
 #ifdef PAIR
 #include "priority-queue-pair.c++"
+typedef cphstl::priority_queue_pair<int> PQ;
 #endif
 
 #ifdef PAIR_LAZY
 #include "priority-queue-pair-lazy.c++"
+typedef cphstl::priority_queue_pair_lazy<int> PQ;
+#endif
+
+#ifdef COSTLESS_MELD
+#include "priority-queue-costless-meld.c++"
+typedef cphstl::priority_queue_costless_meld<int> PQ;
 #endif
 
 
@@ -19,14 +26,7 @@ int main() {
         std::less<_V> c = std::less<_V>();
         _A a = _A();
 
-		#ifdef PAIR
-		cphstl::priority_queue_pair<int>* pq;
-		pq = new cphstl::priority_queue_pair<int>(c, a);
-		#endif
-		#ifdef PAIR_LAZY
-		cphstl::priority_queue_pair_lazy<int>* pq;
-		pq = new cphstl::priority_queue_pair_lazy<int>(c, a);
-		#endif
+				PQ* pq = new PQ(c, a);
 
         assert(pq->size() == 0);
 
