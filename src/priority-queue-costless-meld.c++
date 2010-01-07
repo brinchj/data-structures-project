@@ -145,10 +145,12 @@ namespace cphstl {
         assert(p != NULL);
 
         // cut out left child
-        if(p->child_) {
+        if(p->child_ != NULL) {
           E* myleft = p->child_;
           p->child_ = myleft->right_;
-          p->child_->left_ = p;
+          if(p->child_) {
+            p->child_->left_ = p;
+          }
           // insert myleft in p's place
           if(p->left_->child_ && p->left_->child_==p) {
             // p is left-most child (left is parent)
@@ -217,7 +219,6 @@ namespace cphstl {
     priority_queue_costless_meld() {}
 
 
-  protected:
     C comparator;
     A allocator;
 

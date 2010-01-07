@@ -64,7 +64,7 @@ namespace cphstl {
 
     /* Increase value of element */
     void increase(E* p, V const& v) {
-      //printf("INCR: %i -> %i\n", p->element(), v);
+      //printf("INCR: %i -> %i\n", p->element().value, v.value);
 
       assert(p != NULL);
       assert(comparator(p->element(), v));
@@ -113,6 +113,7 @@ namespace cphstl {
         if(node->right_ == NULL) {
           break;
         }
+        assert(node != NULL && node->right_ != NULL);
         E* next = node->right_->right_;
         // merge with first in list
         node = meld_nodes(node, node->right_);
@@ -184,7 +185,8 @@ namespace cphstl {
       }
       // set a as root and b as child
       b->right_ = a->child_;
-      if(a->child_) {
+      if(a->child_ != NULL) {
+        //assert(a->child_ != NULL);
         a->child_->left_ = b;
       }
       b->left_ = a;
@@ -193,7 +195,7 @@ namespace cphstl {
       return a;
     }
 
-  protected:
+    //protected:
     C comparator;
     A allocator;
   };
