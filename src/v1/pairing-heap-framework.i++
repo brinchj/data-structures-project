@@ -1,0 +1,116 @@
+/*
+  Implementation of the pairing-heap framework.
+*/
+
+#include <algorithm> // std::swap
+#include "assert.h++"
+#include <climits> // LONG_MAX
+#include <iostream>
+#include <list>
+#include <vector>
+#include <utility> // std::pair
+
+namespace cphstl {
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  pairing_heap_framework<V, P, C, A, E>::
+  pairing_heap_framework(C const& c, A const& a, P const& p)
+    : comparator(c), allocator(a),
+      policy(p), top_(0), size_(0) {
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  pairing_heap_framework<V, P, C, A, E>::~pairing_heap_framework() {
+    // Precondition: The data structure contains no elements.
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  E* pairing_heap_framework<V, P, C, A, E>::begin() const {
+    return policy->begin();
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  E* pairing_heap_framework<V, P, C, A, E>::end() const {
+    return policy->end();
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  A pairing_heap_framework<V, P, C, A, E>::get_allocator() const {
+    return allocator;
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  C pairing_heap_framework<V, P, C, A, E>::get_comparator() const {
+    return comparator;
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  typename pairing_heap_framework<V, P, C, A, E>::size_type pairing_heap_framework<V, P, C, A, E>::size() const {
+    return size_;
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  typename pairing_heap_framework<V, P, C, A, E>::size_type pairing_heap_framework<V, P, C, A, E>::max_size() const {
+    return 0;
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  E* pairing_heap_framework<V, P, C, A, E>::top() const {
+    return top_;
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  void pairing_heap_framework<V, P, C, A, E>::insert(E* p) {
+    min_   = policy->insert(&top_, p);
+    size_ += 1;
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  void
+  pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
+    min_ = policy->increase(&top_, p, v);
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  E*
+  pairing_heap_framework<V, P, C, A, E>::extract() {
+    E* node = policy->extract(&top_);
+    size_ -= 1;
+    return node;
+  }
+
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  void
+  pairing_heap_framework<V, P, C, A, E>::extract(E* p) {
+  }
+
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  void
+  pairing_heap_framework<V, P, C, A, E>::meld(pairing_heap_framework& other) {
+    // Precondition: The allocators and comparators must be compatible.
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  void
+  pairing_heap_framework<V, P, C, A, E>::swap(pairing_heap_framework& other) {
+  }
+}
+
+
