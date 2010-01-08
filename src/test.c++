@@ -1,37 +1,62 @@
 
+#include <stdio.h>
+
 #define COSTLESS_MELD
 
-#ifdef PAIR
-#include "priority-queue-pair.c++"
-typedef cphstl::priority_queue_pair<int> PQ;
-#endif
 
-#ifdef PAIR_LAZY
-#include "priority-queue-pair-lazy.c++"
-typedef cphstl::priority_queue_pair_lazy<int> PQ;
-#endif
-
-#ifdef COSTLESS_MELD
-#include "priority-queue-costless-meld.c++"
-typedef cphstl::priority_queue_costless_meld<int> PQ;
-#endif
-
-
-using namespace cphstl;
 #define _V int
 #define _A std::allocator<_V>
 #define _E heap_node<_V, _A>
 
+
+class comparator {
+public:
+  comparator() {
+      count_ = 0;
+    }
+
+  bool operator()(_V const& a, _V const& b) {
+    count_ = count_ + 1;
+    return a < b;
+  }
+
+  unsigned int get_count() {
+    return count_;
+  }
+
+private:
+  unsigned int count_;
+};
+
+
+#ifdef PAIR
+#include "priority-queue-pair.c++"
+typedef cphstl::priority_queue_pair<int,comparator> PQ;
+#endif
+
+#ifdef PAIR_LAZY
+#include "priority-queue-pair-lazy.c++"
+typedef cphstl::priority_queue_pair_lazy<int,comparator> PQ;
+#endif
+
+#ifdef COSTLESS_MELD
+#include "priority-queue-costless-meld.c++"
+typedef cphstl::priority_queue_costless_meld<int,comparator> PQ;
+#endif
+
+
+using namespace cphstl;
+
 int main() {
-  std::less<_V> c = std::less<_V>();
+  comparator c = comparator();
   _A a = _A();
 
   PQ* pq = new PQ(c, a);
 
   assert(pq->size() == 0);
 
-  const int N = 1024*32;
-  const int M = 1024*32;
+  const int N = 1024*1024*8;
+  const int M = 1024;
 
   int i,j;
   _E* node;
@@ -71,7 +96,7 @@ int main() {
   }
   free(node);
 
-  printf("%i %i\n", count, N);
+  printf("comparisons: %i\n", pq->comparator.get_count());
   assert(count == N);
 
   free(pq);

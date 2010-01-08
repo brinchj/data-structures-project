@@ -150,7 +150,6 @@ namespace cphstl {
       return min;
     }
 
-  protected:
     C comparator;
     A allocator;
   };
