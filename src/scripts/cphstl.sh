@@ -1,6 +1,6 @@
 #!/bin/sh
  
-SOURCE="../cphstl/Source"
+SOURCE="../../CPHSTL/Source"
 SOURCES="Algorithm Assert Common Iterator List Type
 Priority-queue-framework Queue"
  

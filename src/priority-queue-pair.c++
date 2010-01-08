@@ -17,7 +17,7 @@ namespace cphstl {
     typename V,
     typename C = std::less<V>,
     typename A = std::allocator<V>,
-    typename E = heap_node<V, A>,
+    typename E = weak_heap_node<V, A>,
     typename P = perfect_component<E>
     >
   class priority_queue_pair : public priority_queue<V,C,A,E,P> {
@@ -75,7 +75,7 @@ namespace cphstl {
       if(p == PQ::top_) return;
 
       // remove p from child-list
-      if(p->left_->child_ && p->left_->child_==p) {
+      if(p->left()->child_ && p->left_->child_==p) {
         // p is left-most child (left is parent)
         p->left_->child_ = p->right_;
         if(p->right_) {
