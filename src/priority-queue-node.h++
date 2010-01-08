@@ -7,7 +7,6 @@
 #ifndef __CPHSTL_HEAP_NODE__
 #define __CPHSTL_HEAP_NODE__
 
-#include "assert.h++"
 #include <cstddef> // std::size_t
 #include <iostream>
 #include <list>
