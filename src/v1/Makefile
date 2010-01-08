@@ -1,11 +1,14 @@
-all: 
+all: test
 
 
 CFLAGS=-ggdb -O2
 INC=cphstl
 
-DEPS=priority-queue.h++ priority-queue-pair.c++ priority-queue-pair-lazy.c++ \
-	priority-queue-costless-meld.c++
+DEPS=pairing-heap-framework.h++ pairing-heap-framework.i++ \
+	pairing-heap-policy-pair.c++ Makefile
+
+test: ${DEPS} test.c++
+	g++ ${CFLAGS} -I${INC} -o test test.c++
 
 clean:
 	rm test test-rnd
