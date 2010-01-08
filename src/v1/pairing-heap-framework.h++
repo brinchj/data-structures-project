@@ -11,7 +11,7 @@
 #include <cstddef> // std::size_t and std::ptrdiff_t
 #include <functional> // std::less
 #include <memory> // std::allocator
-#include "weak-heap-node.h++"
+#include "pairing-heap-node.c++"
 
 namespace cphstl {
 
@@ -20,7 +20,7 @@ namespace cphstl {
     typename P,
     typename C  = std::less<V>,
     typename A  = std::allocator<V>,
-    typename E  = weak_heap_node<V, A>
+    typename E  = heap_node<V, A>
   >
   class pairing_heap_framework {
   public:
@@ -36,8 +36,10 @@ namespace cphstl {
 
     // structors
 
-    explicit pairing_heap_framework(C const& = C(), A const& = A(),
-                                    P const& = P());
+    //pairing_heap_framework(C const& = C(), A const& = A(),
+    //                       P const& = P());
+    pairing_heap_framework(C const& c, A const& a, P const& p);
+
     ~pairing_heap_framework();
 
     // iterators
@@ -62,11 +64,15 @@ namespace cphstl {
     void meld(pairing_heap_framework&);
     void swap(pairing_heap_framework&);
 
+    // is valid
+    int is_valid_tree(E* root);
+    void is_valid();
+
   protected:
 
-    C comparator;
-    A allocator;
-    P policy;
+    C comparator_;
+    A allocator_;
+    P policy_;
     E* top_;
     E* min_;
     size_type size_;
