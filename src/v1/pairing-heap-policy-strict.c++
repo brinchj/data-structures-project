@@ -37,9 +37,6 @@ namespace cphstl {
     /* Increase value of element */
     void increase(E **top, E **min, E* p, V const& v) {
       //printf("INCR: %i -> %i\n", p->element().value, v.value);
-      assert(p != NULL);
-      assert(comparator(p->element(), v));
-
       p->value_ = v;
 
       // if p is top we're done

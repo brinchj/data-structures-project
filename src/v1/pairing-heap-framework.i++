@@ -86,6 +86,8 @@ namespace cphstl {
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
+    assert(p != NULL);
+    assert(comparator_(p->element(), v));
     policy_.increase(&top_, &min_, p, v);
   }
 
