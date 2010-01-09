@@ -3,7 +3,7 @@
 
 #include "pairing-heap-node.c++"
 #include "pairing-heap-framework.h++"
-#include "pairing-heap-policy-pair.c++"
+#include "pairing-heap-policy-strict.c++"
 
 
 
@@ -12,7 +12,7 @@ typedef std::less<_V> _C;
 typedef std::allocator<_V> _A;
 typedef cphstl::heap_node<_V, _A>  _E;
 
-typedef cphstl::pairing_heap_policy_pair<_V>  P;
+typedef cphstl::pairing_heap_policy_strict<_V>  P;
 typedef cphstl::pairing_heap_framework<_V, P> PQ;
 
 
