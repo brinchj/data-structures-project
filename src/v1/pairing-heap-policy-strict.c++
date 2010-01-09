@@ -29,14 +29,13 @@ namespace cphstl {
     }
 
     /* Insert element */
-    E* insert(E **top, E* p) {
+    void insert(E **top, E **min, E* p) {
       // Precondition: Heap is not empty
-      *top = (*top)->meld( p );
-      return *top;
+      *min = *top = (*top)->meld( p );
     }
 
     /* Increase value of element */
-    E* increase(E **top, E* p, V const& v) {
+    void increase(E **top, E **min, E* p, V const& v) {
       //printf("INCR: %i -> %i\n", p->element().value, v.value);
       assert(p != NULL);
       assert(comparator(p->element(), v));
@@ -44,7 +43,10 @@ namespace cphstl {
       p->value_ = v;
 
       // if p is top we're done
-      if(p == *top) return *top;
+      if(p == *top) {
+        *min = *top;
+        return;
+      }
 
       // remove p from child-list
       if(p->left_->child_ && p->left_->child_==p) {
@@ -64,14 +66,13 @@ namespace cphstl {
 
       // reinsert p
       p->left_ = p->right_ = NULL;
-      *top = (*top)->meld( p );
-      return *top;
+      *min = *top = (*top)->meld( p );
     }
 
-    E* extract(E **top, E **min_after) {
+    E* extract(E **top, E **min) {
       // Precondition: at least two elements in queue, size > 1
 
-      E* min = *top;
+      E* extracted_node = *top;
       E* list = NULL;
 
       // iterate through children
@@ -107,8 +108,8 @@ namespace cphstl {
       }
 
       (*top)->left_ = (*top)->right_ = NULL;
-      *min_after = *top;
-      return min;
+      *min = *top;
+      return extracted_node;
     }
 
   private:
