@@ -52,10 +52,17 @@ namespace cphstl {
     /* Increase value of element */
     void increase(E **top, E **min, E* p, V const& v) {
       //printf("INCR: %i -> %i\n", p->element().value, v.value);
+      printf("%i -> %i\n", p->value_, v);
       p->value_ = v;
 
       // if p is top we're done
-      if(p == *top || p->color_ == 1) return;
+      if(p == *top || p->color_ == 1) {
+        if(*min == NULL ||
+           comparator_((*min)->element(), p->element())) {
+          *min = p;
+        }
+        return;
+      }
 
       // remove p from child-list
       if(p->left_->child_ && p->left_->child_==p) {
@@ -80,9 +87,6 @@ namespace cphstl {
 
     E* extract(E **top, E **min) {
       // Precondition: at least two elements in queue, size > 1
-
-      E* extracted_node = *top;
-      E* list = NULL;
 
       // process waiting nodes
       while(list_ != list_end_) {
@@ -109,6 +113,10 @@ namespace cphstl {
         *top = (*top)->meld( list_ );
         list_ = list_end_ = NULL;
       }
+
+      // pick top for extraction
+      E* extracted_node = *top;
+      E* list = NULL;
 
       // iterate through children
       E* node = (*top)->child_;
