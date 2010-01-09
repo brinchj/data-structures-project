@@ -77,7 +77,7 @@ namespace cphstl {
       min_ = top_ = p;
       size_ = 1;
     } else {
-      min_   = policy_.insert(&top_, p);
+      policy_.insert(&top_, &min_, p);
       size_ += 1;
     }
   }
@@ -86,7 +86,7 @@ namespace cphstl {
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
-    min_ = policy_.increase(&top_, p, v);
+    policy_.increase(&top_, &min_, p, v);
   }
 
   template <typename V, typename P, typename C, typename A,
