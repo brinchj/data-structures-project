@@ -3,7 +3,6 @@
 
 #define PAIR
 
-
 #define _V int
 #define _A std::allocator<_V>
 #define _E weak_heap_node<_V, _A>
@@ -28,6 +27,9 @@ private:
   unsigned int count_;
 };
 
+
+
+#define PAIR
 
 #ifdef PAIR
 #include "priority-queue-pair.c++"
@@ -55,8 +57,8 @@ int main() {
 
   assert(pq->size() == 0);
 
-  const int N = 1024*1024*8;
-  const int M = 1024;
+  const int N = 1024;
+  const int M = 16;
 
   int i,j;
   _E* node;

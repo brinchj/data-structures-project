@@ -1,7 +1,7 @@
 all: test test-rnd
 
 
-CFLAGS=-O2 -g -pg
+CFLAGS=-ggdb
 INC=cphstl
 
 DEPS=priority-queue.h++ priority-queue-pair.c++ priority-queue-pair-lazy.c++ \

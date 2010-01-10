@@ -78,6 +78,10 @@ namespace cphstl {
         PQ::min_ = p;
       }
       PQ::size_ += 1;
+
+      //printf("insert: is_valid()\n");
+      PQP::is_valid();
+
       return;
     }
 
@@ -99,12 +103,18 @@ namespace cphstl {
         p->color_ = 1;
         increased_list_.push_front(p);
       }
+
+      //printf("increase: is_valid()\n");
+      //PQP::is_valid();
     }
 
     E* extract() {
       if(increased_list_.size() > 0)
         cleanup();
+      //printf("extract->cleanup: is_valid()\n");
+      //PQP::is_valid();
 
+      //printf("extract: is_valid()\n");
       PQ::min_ = PQP::extract();
       return PQ::min_;
     }
@@ -146,6 +156,7 @@ namespace cphstl {
 
         // cut out left child
         if(p->child_ != NULL) {
+          //printf("has left child\n");
           E* myleft = p->child_;
           p->child_ = myleft->right_;
           if(p->child_) {
@@ -154,6 +165,7 @@ namespace cphstl {
           // insert myleft in p's place
           if(p->left_->child_ && p->left_->child_==p) {
             // p is left-most child (left is parent)
+            //printf("left-most\n");
             p->left_->child_ = myleft;
             myleft->left_ = p->left_;
             if(p->right_ != NULL) {
@@ -161,17 +173,21 @@ namespace cphstl {
             }
             myleft->right_ = p->right_;
           } else if (p->right_ == NULL) {
+            //printf("right-most\n");
             // p is right-most child
             p->left_->right_ = myleft;
             myleft->left_ = p->left_;
+            myleft->right_ = NULL;
           } else {
             // p is somewhere inside child list
+            //printf("inside\n");
             p->left_->right_ = myleft;
             p->right_->left_ = myleft;
             myleft->left_ = p->left_;
             myleft->right_ = p->right_;
           }
         } else {
+          //printf("no child\n");
           // remove p from child-list
           if(p->left_->child_ && p->left_->child_==p) {
             // p is left-most child (left is parent)
@@ -188,6 +204,8 @@ namespace cphstl {
             p->right_->left_ = p->left_;
           }
         }
+        //printf("cut\n");
+        //PQP::is_valid();
 
         list.push_front(p);
         if(list.size() == N) {
@@ -195,24 +213,25 @@ namespace cphstl {
           list_node<E*> *mynode;
           E* tree = list.begin()->content();
           list.erase(list.begin());
-          while( (mynode = list.begin()) != list.end()) {
+          while( (mynode = list.begin()) != list.end() ) {
             list.erase(mynode);
             tree = meld_nodes(tree, mynode->content());
           }
           PQ::top_ = meld_nodes(PQ::top_, tree);
         }
       }
-      list.sort(*ncmp);
-      list_node<E*> *mynode;
-      E* tree = list.begin()->content();
-      list.erase(list.begin());
-      while( (mynode = list.begin()) != list.end()) {
-        list.erase(mynode);
-        tree = meld_nodes(tree, mynode->content());
+      if(list.size() > 0) {
+        list.sort(*ncmp);
+        list_node<E*> *mynode;
+        E* tree = list.begin()->content();
+        list.erase(list.begin());
+        while( (mynode = list.begin()) != list.end() ) {
+          list.erase(mynode);
+          tree = meld_nodes(tree, mynode->content());
+        }
+        PQ::top_ = meld_nodes(PQ::top_, tree);
       }
-      PQ::top_ = meld_nodes(PQ::top_, tree);
       PQ::min_ = PQ::top_;
-
     }
 
 

@@ -59,13 +59,13 @@ namespace cphstl {
       PQ::top_ = meld_nodes(PQ::top_, p);
       PQ::size_ += 1;
       //show();
+      is_valid();
       return;
     }
 
     /* Increase value of element */
     void increase(E* p, V const& v) {
       //printf("INCR: %i -> %i\n", p->element().value, v.value);
-
       assert(p != NULL);
       assert(comparator(p->element(), v));
 
@@ -93,6 +93,8 @@ namespace cphstl {
       // reinsert p
       p->left_ = p->right_ = NULL;
       PQ::top_ = meld_nodes(PQ::top_, p);
+
+      is_valid();
     }
 
     E* extract() {
@@ -101,7 +103,9 @@ namespace cphstl {
         return NULL;
       } else if (PQ::size_ == 1) {
         PQ::size_ = 0;
-        return PQ::top_;
+        E* min = PQ::top_;
+        PQ::top_ = NULL;
+        return min;
       }
 
       E* min = PQ::top_;
@@ -139,13 +143,17 @@ namespace cphstl {
         node = next;
       }
 
+      PQ::top_->left_ = PQ::top_->right_ = NULL;
       PQ::size_ -= 1;
+
+      is_valid();
       return min;
     }
 
     void meld(priority_queue_pair& other) {
       PQ::size_ += other.PQ::size_;
       PQ::top_ = meld_nodes(PQ::top_, other.PQ::top_);
+      is_valid();
     }
 
     void swap(priority_queue_pair& other) {
@@ -192,7 +200,40 @@ namespace cphstl {
       b->left_ = a;
       a->child_ = b;
       a->left_ = a->right_ = NULL;
+
+      //is_valid();
+
       return a;
+    }
+
+
+    int is_valid_tree(E* root) {
+      E* prev = root;
+      E* node = root->child_;
+
+      int count = 0;
+      while(node != NULL) {
+        assert(node->left_ != NULL);
+        assert(node->left_ == prev);
+        count += 1 + is_valid_tree(node);
+
+        prev = node;
+        node = node->right_;
+      }
+      return count;
+    }
+
+    void is_valid() {
+      if(PQ::size_ == 0)
+        return;
+
+      assert(PQ::top_ != NULL);
+
+      E* node = PQ::top_;
+      assert(PQ::top_->left_ == NULL &&
+             PQ::top_->right_ == NULL);
+      int count = 1 + is_valid_tree(PQ::top_);
+      //assert(PQ::size_ == count);
     }
 
     //protected:

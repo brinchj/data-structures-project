@@ -33,7 +33,8 @@ namespace cphstl {
 
     // structors
 
-    explicit priority_queue(C const& = C(), A const& = A()) {}
+    explicit priority_queue(C const& = C(), A const& = A()) :
+      top_(NULL), size_(0) {}
     ~priority_queue() {}
 
 
