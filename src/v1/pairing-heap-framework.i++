@@ -15,9 +15,19 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   pairing_heap_framework<V, P, C, A, E>::
-  pairing_heap_framework(C const& c, A const& a, P const& p)
-    : comparator_(c), allocator_(a),
-      policy_(p), top_(0), size_(0) {
+  pairing_heap_framework(C const& c, A const& a)
+    : comparator_(c), allocator_(a), top_(0), size_(0) {
+    policy_ = P(c, a);
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  pairing_heap_framework<V, P, C, A, E>::
+  pairing_heap_framework()
+    : top_(0), size_(0) {
+    comparator_ = C();
+    allocator_  = A();
+    policy_ = P(comparator_, allocator_);
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -29,13 +39,13 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::begin() const {
-    return policy_->begin();
+    return policy_.begin();
   }
 
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::end() const {
-    return policy_->end();
+    return policy_.end();
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -65,7 +75,7 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::top() const {
-    return top_;
+    return min_;
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -113,6 +123,13 @@ namespace cphstl {
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::extract(E* p) {
+    if(p == min_) {
+      extract();
+      return;
+    }
+    policy_.extract(&top_, &min_, p);
+    //is_valid();
+    size_ -= 1;
   }
 
 
@@ -143,11 +160,9 @@ namespace cphstl {
       return;
 
     assert(top_ != NULL);
-
-    E* node = top_;
     assert(top_->left_ == NULL && top_->right_ == NULL);
-    int count = 1 + is_valid_tree(top_);
-    //assert(PQ::size_ == count);
+    is_valid_tree(top_);
+
   }
 
 
@@ -155,7 +170,7 @@ namespace cphstl {
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::meld(pairing_heap_framework& other) {
-    min_ = policy_->meld(&top_, other);
+    policy_.meld(&top_, &min_, other);
     size_ += other.size_;
   }
 

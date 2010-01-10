@@ -20,7 +20,7 @@ namespace cphstl {
     typename P,
     typename C  = std::less<V>,
     typename A  = std::allocator<V>,
-    typename E  = heap_node<V, A>
+    typename E  = pairing_heap_node<V, A>
   >
   class pairing_heap_framework {
   public:
@@ -33,12 +33,15 @@ namespace cphstl {
     typedef E encapsulator_type;
     typedef P policy_type;
     typedef std::size_t size_type;
+    typedef V& reference;
+    typedef V const& const_reference;
 
     // structors
 
     //pairing_heap_framework(C const& = C(), A const& = A(),
     //                       P const& = P());
-    pairing_heap_framework(C const& c, A const& a, P const& p);
+    pairing_heap_framework(C const& c, A const& a);
+    pairing_heap_framework();
 
     ~pairing_heap_framework();
 

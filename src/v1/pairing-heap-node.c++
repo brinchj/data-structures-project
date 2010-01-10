@@ -4,8 +4,8 @@
   Authors: Asger Bruun, Jyrki Katajainen © 2009
 */
 
-#ifndef __CPHSTL_HEAP_NODE__
-#define __CPHSTL_HEAP_NODE__
+#ifndef __CPHSTL_PAIRING_HEAP_NODE__
+#define __CPHSTL_PAIRING_HEAP_NODE__
 
 #include <cstddef> // std::size_t
 #include <iostream>
@@ -18,14 +18,15 @@ namespace cphstl {
     typename A = std::allocator<V>,
     typename C = std::less<V>
     >
-  class heap_node {
+  class pairing_heap_node {
   public:
 
     typedef V value_type;
     typedef A allocator_type;
     typedef C comparator_type;
     typedef std::size_t size_type;
-    typedef heap_node<V, A> self_t;
+    typedef pairing_heap_node<V, A, C> self_t;
+    typedef std::allocator<self_t> AS;
 
     self_t* left_;
     self_t* right_;
@@ -37,15 +38,21 @@ namespace cphstl {
 
   private:
 
-    heap_node();
-    heap_node(heap_node const&);
-    heap_node& operator=(heap_node const&);
+    pairing_heap_node();
+    pairing_heap_node(pairing_heap_node const&);
+    pairing_heap_node& operator=(pairing_heap_node const&);
 
   public:
 
-    heap_node(V const& v, A const& a, C const& c)
+    pairing_heap_node(V const& v, A const& a, C const& c)
       : left_(NULL), right_(NULL), child_(NULL), color_(0),
         value_(v), allocator_(a), comparator_(c) {
+    }
+    pairing_heap_node(V const& v, AS const& _a)
+      : left_(NULL), right_(NULL), child_(NULL), color_(0),
+        value_(v) {
+      allocator_  = A();
+      comparator_ = C();
     }
 
     static size_type footprint() {
@@ -115,6 +122,16 @@ namespace cphstl {
     self_t*& parent() {
       return left_;
     }
+
+    self_t* successor() const {
+    }
+
+    self_t* root() const {
+    }
+
+    self_t* owner() const {
+    }
+
   };
 }
 
