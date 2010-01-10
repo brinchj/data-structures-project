@@ -17,9 +17,9 @@
 \title{Self-adjusting heaps: A performance comparison}
 
 \author{%
-Johan Brinch\inst{1}
+Johan Brinch
 \and
-Asser Schroder Femo\inst{1}%
+Asser Schroder Femo
 }
 
 \institute{%
@@ -43,6 +43,53 @@ Universitetsparken 1, DK-2100 Copenhagen East, Denmark\\
 \end{subject}
 
 \section{Introduction}
+
+The aim of this project is to develop a meldable priority queue framework in
+order to implement and compare the following pairing heap variants: The original
+pairing heap by Fredman et al, the pairing heap with Stasko-Vitter lazy insertion and
+the pairing heap with costless meld by Elmasry. We also include performance
+comparisons with existing CPH STL priority queues.
+
+\section{Priority queue variants}
+
+\begin{description}
+\item{Original pairing heap} by Fredman et al\cite{fredman} is intended as an
+alternative to the Fibonacci heap. While theoretically slower it is much simpler 
+to implement and faster in practice. All operations run in $O(\lg n)$ amortized time.
+
+\item{Stasky-Vitter lazy insertion} expands on the original pairing heap by
+modifying the insert procedure to maintain an auxiliary list, or forest, of
+nodes to be inserted into the heap tree which is then merged into the main tree
+when a delete-min operation is executed. This modification improves the bound
+for insert to $O(1)$ amortized.
+
+\item{Pairing heap with Costless meld} by Elmasry\cite{costlessmeld} expands on
+the lazy insertion method by having decrease-key also use an auxiliary list to
+determine whether a nodes key was decreased deferring the clean-up work to a
+later time. This makes decrease-key run in $O(\lg \lg n)$ amortized time.
+Melding two heaps only cleans up the auxiliary structures of the smaller heap
+before pairing the heaps as in the original method, making meld have zero
+amortized cost.
+\end{description}
+
+\section{Implementation}
+
+We have implemented all three variants into one pairing queue framework. Due to
+the small differences between the variants we use a policy template to determine
+which variant to use. 
+
+- Framework
+- Policies
+- Integration with stl-meldable-priority-queue as realizator
+- Benchmarking tests
+- Difficulties with different versions of Priority-queue-framework,
+  Meldable-priority-queue and Iterator from CPH STL. Code was updated while the
+  project was in progress.
+
+\section{Performance}
+
+In order to run the code you need 2010 versions of Iterator and
+Meldable-priority-queue, but pre-2010 Priority-queue-framework files.
 
 \begin{acknowledgements}
 This section comes before the References and is unnumbered.
