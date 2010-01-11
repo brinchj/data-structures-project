@@ -17,8 +17,26 @@ namespace cphstl {
   pairing_heap_framework<V, P, C, A, E>::
   pairing_heap_framework(C const& c, A const& a, P const& p)
     : comparator_(c), allocator_(a),
-      policy_(p), top_(0), size_(0) {
+      policy_(p), top_(0), min_(0), size_(0) {
   }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  pairing_heap_framework<V, P, C, A, E>::
+  pairing_heap_framework(C const& c, A const& a)
+    : comparator_(c), allocator_(a), size_(0), top_(0), min_(0) {
+    policy_ = P();
+  }
+
+  template <typename V, typename P, typename C, typename A,
+            typename E>
+  pairing_heap_framework<V, P, C, A, E>::
+  pairing_heap_framework() : size_(0), top_(0), min_(0) {
+    comparator_ = C();
+    allocator_  = A();
+    policy_ = P();
+  }
+
 
   template <typename V, typename P, typename C, typename A,
             typename E>
@@ -29,13 +47,13 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::begin() const {
-    return policy_->begin();
+    return policy_.begin();
   }
 
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::end() const {
-    return policy_->end();
+    return policy_.end();
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -80,6 +98,7 @@ namespace cphstl {
       policy_.insert(&top_, &min_, p);
       size_ += 1;
     }
+    is_valid();
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -88,7 +107,9 @@ namespace cphstl {
   pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
     assert(p != NULL);
     assert(comparator_(p->element(), v));
+    is_valid();
     policy_.increase(&top_, &min_, p, v);
+    is_valid();
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -104,6 +125,7 @@ namespace cphstl {
       return elem;
     }
     E* elem = policy_.extract(&top_, &min_);
+    is_valid();
     size_ -= 1;
     return elem;
   }
@@ -111,8 +133,16 @@ namespace cphstl {
 
   template <typename V, typename P, typename C, typename A,
             typename E>
-  void
+  E*
   pairing_heap_framework<V, P, C, A, E>::extract(E* p) {
+    if(p == min_) {
+      return extract();
+      is_valid();
+    }
+    E* node = policy_.extract(&top_, &min_, p);
+    size_ -= 1;
+    is_valid();
+    return node;
   }
 
 
@@ -151,11 +181,13 @@ namespace cphstl {
   }
 
 
+
   template <typename V, typename P, typename C, typename A,
             typename E>
   void
-  pairing_heap_framework<V, P, C, A, E>::meld(pairing_heap_framework& other) {
-    min_ = policy_->meld(&top_, other);
+  pairing_heap_framework<V, P, C, A, E>::
+  meld(pairing_heap_framework& other) {
+    policy_.meld(&top_, &min_, other);
     size_ += other.size_;
   }
 

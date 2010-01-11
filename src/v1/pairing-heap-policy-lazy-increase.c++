@@ -15,7 +15,7 @@ namespace cphstl {
     typename V,
     typename C = std::less<V>,
     typename A = std::allocator<V>,
-    typename E = heap_node<V, A>
+    typename E = pairing_heap_node<V, A, C>
     >
   class node_compare {
   public:
@@ -31,7 +31,7 @@ template <
   typename V,
   typename C = std::less<V>,
   typename A = std::allocator<V>,
-  typename E = heap_node<V, A>
+  typename E = pairing_heap_node<V, A, C>
   >
 class pairing_heap_policy_lazy_increase {
 public:
@@ -42,6 +42,12 @@ public:
   pairing_heap_policy_lazy_increase(C const& c, A const& a)
     : comparator_(c), allocator_(a), list_(NULL) {
   }
+
+  pairing_heap_policy_lazy_increase() {
+    comparator_ = C();
+    allocator_  = A();
+  }
+
 
   ~pairing_heap_policy_lazy_increase() {
     // precondition: The data structure contains no elements
