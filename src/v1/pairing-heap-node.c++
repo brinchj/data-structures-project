@@ -4,8 +4,8 @@
   Authors: Asger Bruun, Jyrki Katajainen © 2009
 */
 
-#ifndef __CPHSTL_HEAP_NODE__
-#define __CPHSTL_HEAP_NODE__
+#ifndef __CPHSTL_PAIRING_HEAP_NODE__
+#define __CPHSTL_PAIRING_HEAP_NODE__
 
 #include <cstddef> // std::size_t
 #include <iostream>
@@ -18,14 +18,14 @@ namespace cphstl {
     typename A = std::allocator<V>,
     typename C = std::less<V>
     >
-  class heap_node {
+  class pairing_heap_node {
   public:
 
     typedef V value_type;
     typedef A allocator_type;
     typedef C comparator_type;
     typedef std::size_t size_type;
-    typedef heap_node<V, A> self_t;
+    typedef pairing_heap_node<V, A, C> self_t;
 
     self_t* left_;
     self_t* right_;
@@ -37,13 +37,28 @@ namespace cphstl {
 
   private:
 
-    heap_node();
-    heap_node(heap_node const&);
-    heap_node& operator=(heap_node const&);
+    pairing_heap_node(pairing_heap_node const&);
+    pairing_heap_node& operator=(pairing_heap_node const&);
 
   public:
 
-    heap_node(V const& v, A const& a, C const& c)
+    pairing_heap_node()
+      : left_(NULL), right_(NULL), child_(NULL), color_(0)
+    {
+          allocator_  = A();
+          comparator_ = C();
+    }
+
+    pairing_heap_node(V const& value,
+                      std::allocator<pairing_heap_node<A,V,C> > const& a)
+      : left_(NULL), right_(NULL), child_(NULL), color_(0)
+    {
+          allocator_  = A();
+          comparator_ = C();
+          value_ = value;
+    }
+
+    pairing_heap_node(V const& v, A const& a, C const& c)
       : left_(NULL), right_(NULL), child_(NULL), color_(0),
         value_(v), allocator_(a), comparator_(c) {
     }
@@ -51,6 +66,20 @@ namespace cphstl {
     static size_type footprint() {
       return sizeof(self_t);
     }
+
+
+    self_t* successor() const {
+      return NULL;
+    }
+
+    self_t* owner() const {
+      return NULL;
+    }
+
+    self_t* root() const {
+      return NULL;
+    }
+
 
     self_t* meld(self_t* b) {
       // make sure we are smallest
@@ -71,6 +100,46 @@ namespace cphstl {
 
       return a;
     }
+
+
+    void list_cut(self_t **list) {
+      // cut element from double-linked list
+      if(left_ == NULL) {
+        // this is first element
+        *list = right_;
+        if(right_ != NULL)
+          right_->left_ = NULL;
+      } else if (right_ == NULL) {
+        // this is last element
+        left_->right_ = NULL;
+      } else {
+        // this is in between two elements
+        left_->right_ = right_;
+        right_->left_ = left_;
+      }
+      left_ = right_ = NULL;
+    }
+
+    void tree_cut(self_t **root) {
+      if(this == *root) {
+        // this is root
+        *root = NULL;
+      } else if (this == left_->child_) {
+        // this is left-most child
+        left_->child_ = right_;
+        if(right_ != NULL)
+          right_->left_ = left_;
+      } else if (right_ == NULL) {
+        // this is right-most child
+        left_->right_ = NULL;
+      } else {
+        // this is middle child
+        left_->right_ = right_;
+        right_->left_ = left_;
+      }
+      left_ = right_ = NULL;
+    }
+
 
     bool is_root() const {
       return left_ == right_ == 0;

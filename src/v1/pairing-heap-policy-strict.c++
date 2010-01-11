@@ -12,20 +12,33 @@ namespace cphstl {
     typename V,
     typename C = std::less<V>,
     typename A = std::allocator<V>,
-    typename E = heap_node<V, A>
+    typename E = pairing_heap_node<V, A, C>
     >
   class pairing_heap_policy_strict {
   public:
 
     // types
     typedef std::size_t size_type;
+    typedef pairing_heap_policy_strict<V,C,A,E> P;
 
     pairing_heap_policy_strict(C const& c, A const& a)
       : comparator(c), allocator(a) {
     }
 
+    pairing_heap_policy_strict() {
+      pairing_heap_policy_strict(C(), A());
+    }
+
     ~pairing_heap_policy_strict() {
       // precondition: The data structure contains no elements
+    }
+
+    E* begin() const {
+      return NULL;
+    }
+
+    E* end() const {
+      return NULL;
     }
 
     /* Insert element */
@@ -97,16 +110,36 @@ namespace cphstl {
 
       // merge element in list
       *top = list;
-      node = list->right_;
-      while(node != NULL) {
-        E* next = node->right_;
-        *top = (*top)->meld( node );
-        node = next;
+      if(list != NULL) {
+        node = list->right_;
+        while(node != NULL) {
+          E* next = node->right_;
+          *top = (*top)->meld( node );
+          node = next;
+        }
       }
 
       (*top)->left_ = (*top)->right_ = NULL;
       *min = *top;
       return extracted_node;
+    }
+
+    E* extract(E **top, E **min, E *p) {
+      // cut p from the tree
+      p->tree_cut(top);
+      // reinsert p's children
+      E* node = p->child_;
+      while(node != NULL) {
+        E* next = node->right_;
+        (*top)->meld( node );
+        node = next;
+      }
+      p->child_ = NULL;
+      return p;
+    }
+
+    void meld(E **top, E **min,
+              pairing_heap_framework<V,P,C,A,E>& other) {
     }
 
   private:

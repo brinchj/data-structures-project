@@ -12,22 +12,40 @@ namespace cphstl {
     typename V,
     typename C = std::less<V>,
     typename A = std::allocator<V>,
-    typename E = heap_node<V, A>
+    typename E = pairing_heap_node<V, A, C>
     >
   class pairing_heap_policy_lazy_insert {
   public:
 
     // types
     typedef std::size_t size_type;
+    typedef pairing_heap_policy_lazy_insert<V,C,A,E> P;
 
     pairing_heap_policy_lazy_insert(C const& c, A const& a)
       : comparator_(c), allocator_(a) {
       list_ = list_end_ = NULL;
     }
 
+    pairing_heap_policy_lazy_insert() {
+      comparator_ = C();
+      allocator_  = A();
+      list_ = list_end_ = NULL;
+    }
+
+
     ~pairing_heap_policy_lazy_insert() {
       // precondition: The data structure contains no elements
     }
+
+    E *begin() const {
+      return NULL;
+    }
+
+    E *end() const {
+      return NULL;
+    }
+
+
 
     /* Insert element */
     void insert(E **top, E **min, E* p) {
@@ -41,6 +59,7 @@ namespace cphstl {
         list_end_ = p;
       }
       // set color
+      printf("set color\n");
       p->color_ = 1;
       // update minimum
       if(*min == NULL ||
@@ -154,6 +173,10 @@ namespace cphstl {
       *min = *top;
       return extracted_node;
     }
+
+    void meld(E **top, E **min, pairing_heap_framework<V,P,C,A,E> &other) {
+    }
+
 
   private:
     C comparator_;

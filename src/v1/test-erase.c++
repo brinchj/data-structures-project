@@ -15,10 +15,10 @@
 typedef int _V;
 typedef std::less<_V> _C;
 typedef std::allocator<_V> _A;
-typedef cphstl::pairing_heap_node<_V, _A>  _E;
+typedef cphstl::pairing_heap_node<_V, _A, _C>  _E;
 
-//typedef cphstl::pairing_heap_policy_strict<_V>  P;
-typedef cphstl::pairing_heap_policy_lazy_insert<_V>  P;
+typedef cphstl::pairing_heap_policy_strict<_V>  P;
+//typedef cphstl::pairing_heap_policy_lazy_insert<_V>  P;
 //typedef cphstl::pairing_heap_policy_lazy_increase<_V>  P;
 typedef cphstl::pairing_heap_framework<_V, P> PQ;
 
@@ -45,7 +45,7 @@ int main() {
   nodes[0] = pq.push(i);
   for(i = 1; i < N; i++) {
     nodes[i] = pq.push(i);
-    assert(nodes[i]->color_ == 1);
+    //assert(nodes[i]->color_ == 1);
     //pq.is_valid();
   }
 
