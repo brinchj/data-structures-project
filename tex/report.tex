@@ -63,13 +63,16 @@ nodes to be inserted into the heap tree which is then merged into the main tree
 when a delete-min operation is executed. This modification improves the bound
 for insert to $O(1)$ amortized.
 
-\item{Pairing heap with Costless meld} by Elmasry\cite{costlessmeld} expands on
+\item{Pairing heap with Costless Meld} by Elmasry\cite{costlessmeld} expands on
 the lazy insertion method by having decrease-key also use an auxiliary list to
 determine whether a nodes key was decreased deferring the clean-up work to a
 later time. This makes decrease-key run in $O(\lg \lg n)$ amortized time.
 Melding two heaps only cleans up the auxiliary structures of the smaller heap
 before pairing the heaps as in the original method, making meld have zero
 amortized cost.
+
+\item{Pairing heap with Costless Meld and Lazy Insert} is a combination of the
+two abovementioned heaps, with both extensions in use.
 \end{description}
 
 \section{Implementation}
@@ -78,6 +81,14 @@ We have implemented all three variants into one pairing queue framework. Due to
 the small differences between the variants we use a policy template to determine
 which variant to use. 
 
+Our framework is based on the code for Priority-queue-framework in CPH STL as it
+shares the interface and the same general structure. We considered the
+possibility of simply extending or directly using this framework but due to
+differences in the internal node structure we decided against that.
+Specifically, Priority-queue-framework's \verb!heap_node! structure allows only
+parent, left and right pointers where we need a sibling list structure because
+pairing heaps use multiway trees.
+
 - Framework
 - Policies
 - Integration with stl-meldable-priority-queue as realizator
@@ -85,11 +96,27 @@ which variant to use.
 - Difficulties with different versions of Priority-queue-framework,
   Meldable-priority-queue and Iterator from CPH STL. Code was updated while the
   project was in progress.
+- Memory usage .. three pointers per node?
+- Pointer juggling => cause of many errors
+- Usage of other CPH STL code .. cphstl::doubly\_linked\_list for example
+
+Working with and understanding CPH STL proved somewhat difficult and while we
+were able to quickly make an implementation of the pairing heaps, it took a
+while to integrate everything and weed out the bugs. Our lacking experience with
+C++ and templating in particular probably didn't help.
 
 \section{Performance}
 
 In order to run the code you need 2010 versions of Iterator and
-Meldable-priority-queue, but pre-2010 Priority-queue-framework files.
+Meldable-priority-queue from CPH STL (anything after 2010-01-01 should be fine),
+but pre-2010 Priority-queue-framework files.
+
+Additionally we had to fix a bug in Iterator/Code/priority-queue-iterator.h++
+line 77; change template parameter to F (or something else that isn't used
+elsewhere in the file) since E was already declared .
+
+- Sorting of the auxiliary forest in costless meld takes a long time. Could we
+  optimize that somehow?
 
 \begin{acknowledgements}
 This section comes before the References and is unnumbered.
