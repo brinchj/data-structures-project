@@ -1,0 +1,32 @@
+#include "double-stack-heap-store.h++"
+#include "fat-weak-heap-node.h++"
+#include "lazy-mark-store.h++"
+#include <memory>
+#include "perfect-component.h++"
+#include "priority-queue-framework.h++"
+#include "priority-queue-iterator.h++"
+#include "stl-meldable-priority-queue.h++"
+
+long long comps = 0;
+
+template <typename T>
+class counting_comparator {
+public:
+
+  bool operator()(T const& a, T const& b) const {
+    ++comps;
+    return a < b;
+  }
+};
+
+typedef long long V;
+typedef counting_comparator<V> C;
+typedef std::allocator<V> A;
+typedef cphstl::fat_weak_heap_node<V, A> N;
+typedef cphstl::perfect_component<N> P;
+typedef cphstl::double_stack_heap_store<C, A, N, P> H;
+typedef cphstl::lazy_mark_store<C, A, N> M;
+typedef cphstl::priority_queue_framework<V, C, A, N, P, H, M> R; 
+typedef cphstl::priority_queue_iterator<N, P> I;
+typedef cphstl::priority_queue_iterator<N, P, true> J;
+typedef cphstl::meldable_priority_queue<V, C, A, N, P, R, I, J> Q;

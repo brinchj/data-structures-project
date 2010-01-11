@@ -1,0 +1,27 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "stl-meldable-priority-queue.h++"
+
+#include "pairing-heap-framework.h++"
+#include "pairing-heap-policy-lazy-insert.c++"
+
+long long comps = 0;
+
+template <typename T>
+class counting_comparator {
+public:
+
+  bool operator()(T const& a, T const& b) const {
+    ++comps;
+    return a < b;
+  }
+};
+
+typedef long long V;
+typedef counting_comparator<V> C;
+typedef std::allocator<V> A;
+typedef cphstl::pairing_heap_node<V, A, C> E;
+typedef cphstl::pairing_heap_policy_lazy_insert<V, C, A, E> POL;
+typedef cphstl::pairing_heap_framework<V, POL, C, A, E> PQ;
+typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;

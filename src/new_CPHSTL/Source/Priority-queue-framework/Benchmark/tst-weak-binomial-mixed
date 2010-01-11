@@ -1,0 +1,33 @@
+# make weak-queue.time
+
+make pq-db-bno-3-dv.time
+make pq-db-bno-2-dv.time
+make pq-db-pwh-3-dv.time
+make pq-ir-pwh-3-dv.time
+make pq-ir-bno-3-dv.time
+
+make pq-db-bno-3-iv.time
+make pq-db-bno-2-iv.time
+make pq-db-pwh-3-iv.time
+make pq-ir-pwh-3-iv.time
+make pq-ir-bno-3-iv.time
+
+make pq-db-bno-3-dv-slow-top.time
+
+
+# make weak-queue.comp
+
+make pq-db-bno-3-dv.comp
+make pq-db-bno-2-dv.comp
+make pq-db-pwh-3-dv.comp
+make pq-ir-pwh-3-dv.comp
+make pq-ir-bno-3-dv.comp
+
+make pq-db-bno-3-iv.comp
+make pq-db-bno-2-iv.comp
+make pq-db-pwh-3-iv.comp
+make pq-ir-pwh-3-iv.comp
+make pq-ir-bno-3-iv.comp
+
+make pq-db-bno-3-dv-slow-top.comp
+

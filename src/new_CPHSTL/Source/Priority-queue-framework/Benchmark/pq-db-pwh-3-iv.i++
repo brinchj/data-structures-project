@@ -1,0 +1,36 @@
+const bool careful(true);
+
+#include "stl-meldable-priority-queue.h++"
+#include "../../Iterator/Code/node-iterator.h++"
+
+#include "../../../Progress/Meldable-priority-queue/Asger-weak-binomial-mixed/Code/pwh_node.hpp"
+#include "../../../Progress/Meldable-priority-queue/Asger-weak-binomial-mixed/Code/node_with_indirect_value.hpp"
+#include "../../../Progress/Meldable-priority-queue/Asger-weak-binomial-mixed/Code/node_with_facade.hpp"
+#include "../../../Progress/Meldable-priority-queue/Asger-weak-binomial-mixed/Code/direct_binary_heap_store.h++"
+
+
+long long comps = 0;
+
+template <typename T>
+class counting_comparator {
+public:
+
+  bool operator()(T const& a, T const& b) const {
+    ++comps;
+    return a < b;
+  }
+};
+
+
+using namespace cphstl;
+using namespace pqfw_node;
+
+typedef long long V;
+typedef counting_comparator<V> C;
+typedef std::allocator<V> A;
+typedef w_facade<w_indirect_value<pwh_node_base, V, C, A> > E;
+typedef int P; // perfect_component<E> P;
+typedef with_fast_top<direct_binary_heap_store<E> > R;
+typedef cphstl::node_iterator<E> I;
+typedef cphstl::node_iterator<E, true> J;
+typedef meldable_priority_queue<V,C,A,E,P,R,I,J> Q;

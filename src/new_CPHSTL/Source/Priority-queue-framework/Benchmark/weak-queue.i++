@@ -1,0 +1,17 @@
+#include "stl-meldable-priority-queue.h++"
+
+long long comps = 0;
+
+template <typename T>
+class counting_comparator {
+public:
+
+  bool operator()(T const& a, T const& b) const {
+    ++comps;
+    return a < b;
+  }
+};
+
+typedef long long V;
+typedef counting_comparator<V> C;
+typedef cphstl::meldable_priority_queue<V, C> Q;
