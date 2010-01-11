@@ -13,15 +13,16 @@
 #include <functional> // std::less
 #include <memory> // std::allocator
 #include <vector>
-#include "priority-queue-node.h++"
+#include "heap-node.h++"
 #include "perfect-component.h++"
+#include "weak-heap-node.h++"
 
 namespace cphstl {
   template <
     typename V,
     typename C = std::less<V>,
     typename A = std::allocator<V>,
-    typename E = heap_node<V, A>,
+    typename E = weak_heap_node<V, A>,
     typename P = perfect_component<E>
     >
   class priority_queue {

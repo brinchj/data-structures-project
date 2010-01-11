@@ -4,8 +4,8 @@
 #include "pairing-heap-node.c++"
 
 
-#ifndef PAIRING_HEAP_POLICY_LAZY_INSERT
-#define PAIRING_HEAP_POLICY_LAZY_INSERT
+#ifndef PAIRING_HEAP_POLICY_PAIR
+#define PAIRING_HEAP_POLICY_PAIR
 
 namespace cphstl {
   template <
@@ -14,55 +14,37 @@ namespace cphstl {
     typename A = std::allocator<V>,
     typename E = heap_node<V, A>
     >
-  class pairing_heap_policy_lazy_insert {
+  class pairing_heap_policy_pair {
   public:
 
     // types
     typedef std::size_t size_type;
 
-    pairing_heap_policy_lazy_insert(C const& c, A const& a)
-      : comparator_(c), allocator_(a) {
-      list_ = list_end_ = NULL;
+    pairing_heap_policy_pair(C const& c, A const& a)
+      : comparator(c), allocator(a) {
     }
 
-    ~pairing_heap_policy_lazy_insert() {
+    ~pairing_heap_policy_pair() {
       // precondition: The data structure contains no elements
     }
 
     /* Insert element */
-    void insert(E **top, E **min, E* p) {
+    E* insert(E **top, E* p) {
       // Precondition: Heap is not empty
-      if(list_ == NULL) {
-        list_ = list_end_ = p;
-      } else {
-        p->left_  = list_end_;
-        p->right_ = NULL;
-        list_end_->right_ = p;
-        list_end_ = p;
-      }
-      // set color
-      p->color_ = 1;
-      // update minimum
-      if(*min == NULL ||
-         comparator_((*min)->element(), p->element())) {
-        *min = p;
-      }
+      *top = (*top)->meld( p );
+      return *top;
     }
 
     /* Increase value of element */
-    void increase(E **top, E **min, E* p, V const& v) {
+    E* increase(E **top, E* p, V const& v) {
       //printf("INCR: %i -> %i\n", p->element().value, v.value);
-      printf("%i -> %i\n", p->value_, v);
+      assert(p != NULL);
+      assert(comparator(p->element(), v));
+
       p->value_ = v;
 
       // if p is top we're done
-      if(p == *top || p->color_ == 1) {
-        if(*min == NULL ||
-           comparator_((*min)->element(), p->element())) {
-          *min = p;
-        }
-        return;
-      }
+      if(p == *top) return *top;
 
       // remove p from child-list
       if(p->left_->child_ && p->left_->child_==p) {
@@ -82,40 +64,14 @@ namespace cphstl {
 
       // reinsert p
       p->left_ = p->right_ = NULL;
-      insert(top, min, p);
+      *top = (*top)->meld( p );
+      return *top;
     }
 
-    E* extract(E **top, E **min) {
+    E* extract(E **top, E **min_after) {
       // Precondition: at least two elements in queue, size > 1
 
-      // process waiting nodes
-      while(list_ != list_end_) {
-        // cut first two elements from list
-        E* first = list_;
-        list_ = list_->right_->right_;
-
-        // meld first two nodes
-        first->color_ = first->right_->color_ = 0;
-        E* node = first->meld( first->right_ );
-        // insert new node as last in list
-        if(list_ == NULL) {
-          list_ = node;
-          break;
-        }
-        node->left_ = list_end_;
-        node->right_ = NULL;
-        list_end_->right_ = node;
-        list_end_ = node;
-      }
-
-      if(list_ != NULL) {
-        list_->color_ = 0;
-        *top = (*top)->meld( list_ );
-        list_ = list_end_ = NULL;
-      }
-
-      // pick top for extraction
-      E* extracted_node = *top;
+      E* min = *top;
       E* list = NULL;
 
       // iterate through children
@@ -151,15 +107,13 @@ namespace cphstl {
       }
 
       (*top)->left_ = (*top)->right_ = NULL;
-      *min = *top;
-      return extracted_node;
+      *min_after = *top;
+      return min;
     }
 
   private:
-    C comparator_;
-    A allocator_;
-
-    E *list_, *list_end_;
+    C comparator;
+    A allocator;
 
   };
 }

@@ -12,11 +12,5 @@ DEPS=pairing-heap-framework.h++ pairing-heap-framework.i++ \
 test: ${DEPS} test.c++
 	g++ ${CFLAGS} -I${INC} -o test test.c++
 
-test-realizator: ${DEPS} test-realizator.c++
-	g++ ${CFLAGS} -I${INC} -o test-realizator test-realizator.c++
-
-test-erase: ${DEPS} test-erase.c++
-	g++ ${CFLAGS} -I${INC} -o test-erase test-erase.c++
-
 clean:
-	rm -f test test-realizator
+	rm test

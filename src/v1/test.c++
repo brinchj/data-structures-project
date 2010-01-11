@@ -12,7 +12,7 @@
 typedef int _V;
 typedef std::less<_V> _C;
 typedef std::allocator<_V> _A;
-typedef cphstl::pairing_heap_node<_V, _A>  _E;
+typedef cphstl::heap_node<_V, _A>  _E;
 
 //typedef cphstl::pairing_heap_policy_strict<_V>  P;
 typedef cphstl::pairing_heap_policy_lazy_insert<_V>  P;

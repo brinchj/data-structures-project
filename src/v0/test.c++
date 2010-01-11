@@ -1,9 +1,11 @@
 
 #include <stdio.h>
 
+#define PAIR
+
 #define _V int
 #define _A std::allocator<_V>
-#define _E heap_node<_V, _A>
+#define _E weak_heap_node<_V, _A>
 
 
 class comparator {
