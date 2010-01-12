@@ -58,18 +58,18 @@ comparisons with existing CPH STL priority queues.
 \item{Original pairing heap} by Fredman et al\cite{fredman} is intended as an
 alternative to the Fibonacci heap. While theoretically slower (conjectured just
 as fast but not proven) it is much simpler to implement and faster in practice.
-All operations run in $O(\lg n)$ amortized time.
+All operations run in $O(\log n)$ amortized time.
 
 \item{Stasky-Vitter lazy insertion} expands on the original pairing heap by
 modifying the insert procedure to maintain an auxiliary list, or forest, of
-nodes to be inserted into the heap tree which is then merged into the main tree
-when a delete-min operation is executed. This modification improves the bound
-for insert to $O(1)$ amortized.
+nodes (or single-node trees) to be inserted into the heap tree which is then
+merged into the main tree when a delete-min operation is executed. This
+modification improves the bound for insert to $O(1)$ amortized.
 
-\item{Pairing heap with Costless Meld} by Elmasry\cite{costlessmeld} expands on
-the lazy insertion method by having decrease-key also use an auxiliary list to
+\item{Pairing heap with Costless Meld} by Elmasry\cite{elmasry} expands on
+the original heap by having decrease-key also use an auxiliary list to
 determine whether a nodes key was decreased deferring the clean-up work to a
-later time. This makes decrease-key run in $O(\lg \lg n)$ amortized time.
+later time. This makes decrease-key run in $O(\log \log n)$ amortized time.
 Melding two heaps only cleans up the auxiliary structures of the smaller heap
 before pairing the heaps as in the original method, making meld have zero
 amortized cost.
@@ -98,23 +98,39 @@ The framework consists mainly of the class \verb!pairing_heap_framework! which
 is based on \verb!cphstl::priority_queue_framework!. It implements
 some of the \verb!extract! logic that is identical for all our pairing heap
 variants. For some cases, and for all other heap operations it defers to the
-\emph{policy}, which is given as template parameter \verb!P!.
+\emph{policy}, which is given as template parameter \verb!P!.\\
+\\
+\verb!pairing_heap_node! contains the pointers neede for the child, sibling
+structure (a left, right and parent pointer). An obvious modification would be
+to extend the node structure and methods to be able to contain only two pointers
+as described in the original pairing heap paper\cite{fredman}. A
+\verb!pairing_heap_node! is able to meld itself with another tree (assuming both
+are root nodes) as well as into and out of an auxiliary list.
 
 \subsection{Policies}
 
-- Framework
-- Policies
-- Integration with stl-meldable-priority-queue as realizator
-- Benchmarking tests
-- Difficulties with different versions of Priority-queue-framework,
-  Meldable-priority-queue and Iterator from CPH STL. Code was updated while the
-  project was in progress.
-- Memory usage .. three pointers per node?
-- Pointer juggling => cause of many errors
-- Usage of other CPH STL code .. cphstl::doubly\_linked\_list for example
+General for the policies is, as they do almost all the modifications of the heap
+tree and/or auxiliary lists there is a lot of pointer juggling; it is easy to
+mess up the structure of the heap. Therefore we have debug methods in place to
+ensure the validity of the data structure (the \verb!is_valid! and
+\verb!is_valid_tree! methods), which proved very helpful during implementation
+and bugfixing.
 
-In the Costless Meld heap, when doing phase 2 of the cleanup we can save a few
-comparisons by observing that when combining the $\Theta(\lg n)$ trees in each
+\subsubsection{Strict policy}
+
+This implements the original pairing heap.
+
+\subsubsection{Lazy insert policy}
+
+The lazy insert policy uses \verb!cphstl::doubly_linked_list! as a container for
+the auxiliary list, or insertion buffer.
+
+\subsubsection{Lazy increase policy}
+
+This policy implements the costless meld, or lazy increase heap.
+
+In the costless meld heap, when doing phase 2 of the cleanup we can save a few
+comparisons by observing that when combining the $\Theta(\log n)$ trees in each
 group we already know the order in which to link the trees since they have been
 sorted according to the root nodes. Our link operation can then just link the
 trees without doing the usual comparison between the root nodes. While this is
@@ -122,10 +138,25 @@ not an actual saving (we just moved the comparison from the link operation to
 the sorting of the trees) it is an important implementation detail easily
 overlooked.
 
+\subsection{Usage with CPH STL}
+
+We have successfully managed to adhere to the meldable priority queue interface
+of CPH STL (\verb!cphstl::stl-meldable-priority-queue!). Our priority queue
+framework can be given as the realizator template argument and should work
+without further modifications, which has been verified by running the benchmarks
+in \verb!Source/Priority-queue-framework/Benchmark!.
+
 Working with and understanding CPH STL proved somewhat difficult and while we
 were able to quickly make an implementation of the pairing heaps, it took a
 while to integrate everything and weed out the bugs. Our lacking experience with
 C++ and templating in particular probably didn't help.
+
+- Benchmarking tests
+- Difficulties with different versions of Priority-queue-framework,
+  Meldable-priority-queue and Iterator from CPH STL. Code was updated while the
+  project was in progress.
+- Memory usage .. three pointers per node?
+- Usage of other CPH STL code .. cphstl::doubly\_linked\_list for example
 
 \section{Performance}
 
@@ -139,6 +170,8 @@ elsewhere in the file) since E was already declared .
 
 - Sorting of the auxiliary forest in costless meld takes a long time. Could we
   optimize that somehow?
+
+- Memory usage? Three pointers per node vs. two pointers per node?
 
 \begin{acknowledgements}
 This section comes before the References and is unnumbered.
