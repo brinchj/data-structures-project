@@ -21,7 +21,7 @@ public:
 typedef long long V;
 typedef counting_comparator<V> C;
 typedef std::allocator<V> A;
-typedef cphstl::pairing_heap_node<V, A> E;
+typedef cphstl::pairing_heap_node<V, A, C> E;
 typedef cphstl::pairing_heap_policy_lazy_insert<V, C, A, E> POL;
 typedef cphstl::pairing_heap_framework<V, POL, C, A, E> PQ;
 typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;
