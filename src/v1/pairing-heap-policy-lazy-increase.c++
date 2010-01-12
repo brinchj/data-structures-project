@@ -38,6 +38,7 @@ public:
 
   // types
   typedef std::size_t size_type;
+  typedef pairing_heap_policy_lazy_increase<V,C,A,E> P;
 
   pairing_heap_policy_lazy_increase(C const& c, A const& a)
     : comparator_(c), allocator_(a), list_(NULL) {
@@ -52,6 +53,16 @@ public:
   ~pairing_heap_policy_lazy_increase() {
     // precondition: The data structure contains no elements
   }
+
+  E* begin() const {
+    return NULL;
+  }
+
+  E* end() const {
+    return NULL;
+  }
+
+
 
   /* Insert element */
   void insert(E **top, E **min, E* p) {
@@ -76,14 +87,16 @@ public:
     // insert p into list
     p->color_ = 1;
     list_.push_front(p);
+    p->node_in_list = list_.begin();
   }
 
-  E* extract(E **top, E **min) {
+  E* extract(E **top, E **min, int size) {
     // Precondition: at least two elements in queue, size > 1
 
     if(list_.size() > 0) {
-      cleanup(top, min, 0);
+      cleanup(top, min, size);
     }
+    //printf("top: %i\n", (*top)->value_);
 
     E* extracted_node = *top;
     E* list = NULL;
@@ -112,36 +125,65 @@ public:
     }
 
     // merge element in list
-    *top = list;
-    node = list->right_;
+    if(list != NULL) {
+      *top = list;
+      node = list->right_;
+      while(node != NULL) {
+        E* next = node->right_;
+        *top = (*top)->meld( node );
+        node = next;
+      }
+      (*top)->left_ = (*top)->right_ = NULL;
+    } else {
+      *top = NULL;
+    }
+
+    *min = *top;
+    //printf("extracted: %i\n", extracted_node->value_);
+    return extracted_node;
+  }
+
+
+  E* extract(E **top, E **min, E *p) {
+    //printf("extract(%p) called\n", p);
+
+    if(p->color_ == 1) {
+      // cut p from list
+      list_.erase(p->node_in_list);
+    }
+
+    // cut p from tree
+    p->tree_cut(top);
+
+    // reinsert children
+    E* node = p->child_;
     while(node != NULL) {
       E* next = node->right_;
       *top = (*top)->meld( node );
       node = next;
     }
 
-    (*top)->left_ = (*top)->right_ = NULL;
-    *min = *top;
-    return extracted_node;
+    p->child_ = NULL;
+    return p;
   }
 
 
-  void cleanup(E **top, E** min, int size) {
+  void cleanup(E **top, E **min, int size) {
+    printf("CLEANUP\n");
     // size of list to sort
-    const int N = ceil(log(size));
+    const size_t logN = ceil(log(size));
 
     // comparator
-    node_compare<V,C,A,E>* ncmp =
-      new node_compare<V,C,A,E>(comparator_);
+    node_compare<V,C,A,E>* ncmp = new node_compare<V,C,A,E>(comparator_);
     doubly_linked_list<E*> sort_list;
 
     list_node<E*> *node;
-    list_node<E*> *sentinel = list_.end();
-    while( (node = list_.begin()) != sentinel) {
-      list_.erase(node);
-      node->content()->color_ = 0;
-
+    while( (node = list_.begin()) != list_.end()) {
       E* p = node->content();
+      list_.erase(node);
+      p->color_ = 0;
+      //printf("has node: %i\n", p->value_);
+
       assert(p != NULL);
 
       // cut out left child
@@ -193,32 +235,41 @@ public:
           p->left_->right_ = p->right_;
           p->right_->left_ = p->left_;
         }
-        sort_list.push_front(p);
-        if(sort_list.size() == N) {
-          sort_list.sort(*ncmp);
-          list_node<E*> *mynode;
-          E* tree = sort_list.begin()->content();
-          sort_list.erase(sort_list.begin());
-          while( (mynode = sort_list.begin()) != sort_list.end() ) {
-            sort_list.erase(mynode);
-            tree = tree->meld( mynode->content() );
-          }
-          *top = (*top)->meld( tree );
-        }
       }
-      if(sort_list.size() > 0) {
+      sort_list.push_front(p);
+      if(sort_list.size() == logN) {
         sort_list.sort(*ncmp);
         list_node<E*> *mynode;
         E* tree = sort_list.begin()->content();
         sort_list.erase(sort_list.begin());
         while( (mynode = sort_list.begin()) != sort_list.end() ) {
+          tree = (mynode->content())->meld(tree, true);
           sort_list.erase(mynode);
-          tree = meld_nodes(tree, mynode->content());
         }
         *top = (*top)->meld( tree );
       }
-      *min = *top;
     }
+    if(sort_list.size() > 0) {
+      sort_list.sort(*ncmp);
+      list_node<E*> *mynode;
+      E* tree = sort_list.begin()->content();
+      sort_list.erase(sort_list.begin());
+      while( (mynode = sort_list.begin()) != sort_list.end() ) {
+        sort_list.erase(mynode);
+        tree = (mynode->content())->meld(tree, true);
+      }
+      *top = (*top)->meld( tree );
+    }
+    *min = *top;
+  }
+
+
+  void meld(E **top, E **min, pairing_heap_framework<V,P,C,A,E> &other) {
+  }
+
+
+  int is_valid() {
+    return 0;
   }
 
 

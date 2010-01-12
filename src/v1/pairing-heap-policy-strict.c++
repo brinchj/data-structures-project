@@ -79,7 +79,7 @@ namespace cphstl {
       *min = *top = (*top)->meld( p );
     }
 
-    E* extract(E **top, E **min) {
+    E* extract(E **top, E **min, int size) {
       // Precondition: at least two elements in queue, size > 1
 
       E* extracted_node = *top;
@@ -140,6 +140,10 @@ namespace cphstl {
 
     void meld(E **top, E **min,
               pairing_heap_framework<V,P,C,A,E>& other) {
+    }
+
+    int is_valid() {
+      return 0;
     }
 
   private:
