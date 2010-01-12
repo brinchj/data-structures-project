@@ -1,7 +1,9 @@
 \documentclass{DIKU-article}[2010/01/13]
 
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage[OT1]{fontenc}
+\usepackage[danish]{babel}
+\usepackage{t1enc}
 
 %\selectdanish % Add this if your report is in Danish
 
@@ -12,22 +14,22 @@
 %\draft
 
 \titlehead{Self-adjusting heaps}
-\authorhead{Johan Brinch and Asser Schroder Femo}
+\authorhead{Johan Brinch and Asser Schrøder Femø}
 
 \title{Self-adjusting heaps: A performance comparison}
 
-\author{%
+\author{
 Johan Brinch
 \and
-Asser Schroder Femo
+Asser Schrøder Femø
 }
 
-\institute{%
+\institute{
 Department of Computing, University of Copenhagen\\
 Universitetsparken 1, DK-2100 Copenhagen East, Denmark\\
 \email{...@diku.dk}
 \and
-\email{asser@diku.dk}%
+\email{asser@diku.dk}
 }
 
 \dates{CPH STL Report 2010-?, January 2010.}
@@ -54,8 +56,9 @@ comparisons with existing CPH STL priority queues.
 
 \begin{description}
 \item{Original pairing heap} by Fredman et al\cite{fredman} is intended as an
-alternative to the Fibonacci heap. While theoretically slower it is much simpler 
-to implement and faster in practice. All operations run in $O(\lg n)$ amortized time.
+alternative to the Fibonacci heap. While theoretically slower (conjectured just
+as fast but not proven) it is much simpler to implement and faster in practice.
+All operations run in $O(\lg n)$ amortized time.
 
 \item{Stasky-Vitter lazy insertion} expands on the original pairing heap by
 modifying the insert procedure to maintain an auxiliary list, or forest, of
@@ -89,6 +92,16 @@ Specifically, Priority-queue-framework's \verb!heap_node! structure allows only
 parent, left and right pointers where we need a sibling list structure because
 pairing heaps use multiway trees.
 
+\subsection{Main framework}
+
+The framework consists mainly of the class \verb!pairing_heap_framework! which
+is based on \verb!cphstl::priority_queue_framework!. It implements
+some of the \verb!extract! logic that is identical for all our pairing heap
+variants. For some cases, and for all other heap operations it defers to the
+\emph{policy}, which is given as template parameter \verb!P!.
+
+\subsection{Policies}
+
 - Framework
 - Policies
 - Integration with stl-meldable-priority-queue as realizator
@@ -99,6 +112,15 @@ pairing heaps use multiway trees.
 - Memory usage .. three pointers per node?
 - Pointer juggling => cause of many errors
 - Usage of other CPH STL code .. cphstl::doubly\_linked\_list for example
+
+In the Costless Meld heap, when doing phase 2 of the cleanup we can save a few
+comparisons by observing that when combining the $\Theta(\lg n)$ trees in each
+group we already know the order in which to link the trees since they have been
+sorted according to the root nodes. Our link operation can then just link the
+trees without doing the usual comparison between the root nodes. While this is
+not an actual saving (we just moved the comparison from the link operation to
+the sorting of the trees) it is an important implementation detail easily
+overlooked.
 
 Working with and understanding CPH STL proved somewhat difficult and while we
 were able to quickly make an implementation of the pairing heaps, it took a
