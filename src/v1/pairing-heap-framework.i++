@@ -10,6 +10,14 @@
 #include <vector>
 #include <utility> // std::pair
 
+
+#ifdef DEBUG
+#define IS_VALID() is_valid()
+#else
+#define IS_VALID() //
+#endif
+
+
 namespace cphstl {
 
   template <typename V, typename P, typename C, typename A,
@@ -17,7 +25,7 @@ namespace cphstl {
   pairing_heap_framework<V, P, C, A, E>::
   pairing_heap_framework(C const& c, A const& a, P const& p)
     : comparator_(c), allocator_(a),
-      policy_(p), top_(0), min_(0), size_(0) {
+      policy_(p), size_(0), top_(0), min_(0) {
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -83,13 +91,14 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::top() const {
-    return top_;
+    return min_;
   }
 
   template <typename V, typename P, typename C, typename A,
             typename E>
   void pairing_heap_framework<V, P, C, A, E>::insert(E* p) {
     assert(p != NULL);
+    //printf("insert: %i\n", p->value_);
     // heap is empty
     if(top_ == NULL) {
       min_ = top_ = p;
@@ -98,7 +107,7 @@ namespace cphstl {
       policy_.insert(&top_, &min_, p);
       size_ += 1;
     }
-    is_valid();
+    IS_VALID();
   }
 
   template <typename V, typename P, typename C, typename A,
@@ -106,27 +115,30 @@ namespace cphstl {
   void
   pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
     assert(p != NULL);
-    assert(comparator_(p->element(), v));
-    is_valid();
+    //assert(comparator_(p->element(), v));
     policy_.increase(&top_, &min_, p, v);
-    is_valid();
+    IS_VALID();
   }
 
   template <typename V, typename P, typename C, typename A,
             typename E>
   E*
   pairing_heap_framework<V, P, C, A, E>::extract() {
+    IS_VALID();
+    //printf("EXTRACT: %i, %i, %i\n", top_->value_, min_->value_, size_);
     if(size_ == 0) {
       return NULL;
     } else if (size_ == 1 && top_ != NULL) {
       size_ = 0;
       E* elem = top_;
       min_ = top_ = NULL;
+      IS_VALID();
       return elem;
     }
-    E* elem = policy_.extract(&top_, &min_);
-    is_valid();
+    E* elem = policy_.extract(&top_, &min_, size_);
+    assert(elem->value_ >= top_->value_);
     size_ -= 1;
+    IS_VALID();
     return elem;
   }
 
@@ -137,11 +149,10 @@ namespace cphstl {
   pairing_heap_framework<V, P, C, A, E>::extract(E* p) {
     if(p == min_) {
       return extract();
-      is_valid();
     }
     E* node = policy_.extract(&top_, &min_, p);
     size_ -= 1;
-    is_valid();
+    IS_VALID();
     return node;
   }
 
@@ -149,15 +160,24 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   int
-  pairing_heap_framework<V, P, C, A, E>::is_valid_tree(E* root) {
+  pairing_heap_framework<V, P, C, A, E>::is_valid_tree(E *root, bool undo=false) {
     E* prev = root;
     E* node = root->child_;
 
     int count = 0;
     while(node != NULL) {
-      assert(node->left_ != NULL);
+      //assert(node->left_ != NULL);
       assert(node->left_ == prev);
-      count += 1 + is_valid_tree(node);
+      if(undo) {
+        assert(node->color_ >= 256);
+        node->color_ &= 255;
+      } else {
+        assert(node->color_ < 256);
+        node->color_ |= 256;
+      }
+      //assert(root->value_ >= node->value_);
+
+      count += 1 + is_valid_tree(node, undo);
 
       prev = node;
       node = node->right_;
@@ -169,15 +189,17 @@ namespace cphstl {
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::is_valid() {
-    if(size_ == 0)
-      return;
+    size_type count = policy_.is_valid();
+    //printf("policy count=%i\n", count);
 
-    assert(top_ != NULL);
+    if(top_ != NULL) {
+      assert(top_->left_ == NULL && top_->right_ == NULL);
+      count += 1 + is_valid_tree(top_);
+      is_valid_tree(top_, true);
+    }
 
-    E* node = top_;
-    assert(top_->left_ == NULL && top_->right_ == NULL);
-    int count = 1 + is_valid_tree(top_);
-    //assert(PQ::size_ == count);
+    //printf("count=%i, size=%i\n", count, size_);
+    assert(size_ == count);
   }
 
 

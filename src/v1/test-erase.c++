@@ -17,9 +17,9 @@ typedef std::less<_V> _C;
 typedef std::allocator<_V> _A;
 typedef cphstl::pairing_heap_node<_V, _A, _C>  _E;
 
-typedef cphstl::pairing_heap_policy_strict<_V>  P;
+//typedef cphstl::pairing_heap_policy_strict<_V>  P;
 //typedef cphstl::pairing_heap_policy_lazy_insert<_V>  P;
-//typedef cphstl::pairing_heap_policy_lazy_increase<_V>  P;
+typedef cphstl::pairing_heap_policy_lazy_increase<_V>  P;
 typedef cphstl::pairing_heap_framework<_V, P> PQ;
 
 typedef cphstl::meldable_priority_queue<_V, _C, _A, _E, PQ> MPQ;

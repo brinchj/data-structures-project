@@ -70,7 +70,7 @@ namespace cphstl {
     void swap(pairing_heap_framework&);
 
     // is valid
-    int is_valid_tree(E* root);
+    int is_valid_tree(E* root, bool undo);
     void is_valid();
 
   protected:
@@ -78,9 +78,9 @@ namespace cphstl {
     C comparator_;
     A allocator_;
     P policy_;
+    size_type size_;
     E* top_;
     E* min_;
-    size_type size_;
 
   public:
 

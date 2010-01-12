@@ -11,6 +11,8 @@
 #include <iostream>
 #include <list>
 
+#include "doubly-linked-list.h++"
+
 namespace cphstl {
 
   template <
@@ -23,7 +25,6 @@ namespace cphstl {
 
     typedef V value_type;
     typedef A allocator_type;
-    typedef C comparator_type;
     typedef std::size_t size_type;
     typedef pairing_heap_node<V, A, C> self_t;
 
@@ -32,8 +33,10 @@ namespace cphstl {
     self_t* child_;
     int color_;
     V value_;
-    C comparator_;
     A allocator_;
+    C comparator_;
+
+    list_node<self_t*> *node_in_list;
 
   private:
 
@@ -43,25 +46,30 @@ namespace cphstl {
   public:
 
     pairing_heap_node()
-      : left_(NULL), right_(NULL), child_(NULL), color_(0)
+      : left_(NULL), right_(NULL), child_(NULL), color_(0), node_in_list(NULL)
     {
           allocator_  = A();
           comparator_ = C();
     }
 
     pairing_heap_node(V const& value,
-                      std::allocator<pairing_heap_node<A,V,C> > const& a)
-      : left_(NULL), right_(NULL), child_(NULL), color_(0)
+                      std::allocator<pairing_heap_node<V,A,C> > const& a)
+      : left_(NULL), right_(NULL), child_(NULL), color_(0), node_in_list(NULL)
     {
           allocator_  = A();
-          comparator_ = C();
           value_ = value;
+          comparator_ = C();
     }
 
-    pairing_heap_node(V const& v, A const& a, C const& c)
+    pairing_heap_node(V const& v, A const& a)
       : left_(NULL), right_(NULL), child_(NULL), color_(0),
-        value_(v), allocator_(a), comparator_(c) {
+        value_(v), allocator_(a), node_in_list(NULL) {
+          comparator_ = C();
     }
+
+    ~pairing_heap_node() {
+    }
+
 
     static size_type footprint() {
       return sizeof(self_t);
@@ -81,13 +89,15 @@ namespace cphstl {
     }
 
 
-    self_t* meld(self_t* b) {
+    self_t* meld(self_t* b, bool this_is_smallest = false) {
       // make sure we are smallest
       self_t* a = this;
-      if(comparator_(value_, b->element())){
-        self_t* tmp = this;
-        a = b;
-        b = tmp;
+      if(!this_is_smallest) {
+        if(comparator_(value_, b->element())){
+          self_t* tmp = this;
+          a = b;
+          b = tmp;
+        }
       }
       // set a as root and b as child
       b->right_ = a->child_;
@@ -97,12 +107,11 @@ namespace cphstl {
       b->left_ = a;
       a->child_ = b;
       a->left_ = a->right_ = NULL;
-
       return a;
     }
 
 
-    void list_cut(self_t **list) {
+    void list_cut(self_t **list, self_t **list_end, size_t *list_size) {
       // cut element from double-linked list
       if(left_ == NULL) {
         // this is first element
@@ -112,13 +121,34 @@ namespace cphstl {
       } else if (right_ == NULL) {
         // this is last element
         left_->right_ = NULL;
+        *list_end = left_;
       } else {
         // this is in between two elements
+        printf("between\n");
         left_->right_ = right_;
         right_->left_ = left_;
       }
       left_ = right_ = NULL;
+      if(list_size != NULL) {
+        (*list_size) -= 1;
+      }
     }
+
+    void list_add(self_t **list, self_t **list_end, size_t *list_size) {
+      if((*list) == NULL) {
+        *list = *list_end = this;
+        this->left_ = this->right_ = NULL;
+      } else {
+        (*list_end)->right_ = this;
+        this->left_  = *list_end;
+        this->right_ = NULL;
+        *list_end = this;
+      }
+      if(list_size != NULL) {
+        (*list_size) += 1;
+      }
+    }
+
 
     void tree_cut(self_t **root) {
       if(this == *root) {
