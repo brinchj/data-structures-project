@@ -82,32 +82,76 @@ public:
     }
 
     // if p is top we're done
-    if(p == *top || p->color_ == 1) return;
+    if(p == *top || p->color_ == 1) {
+      return;
+    }
 
     // insert p into list
     p->color_ = 1;
     list_.push_front(p);
-    p->node_in_list = list_.begin();
+    p->node_in_list_ = list_.begin();
+    assert(p->node_in_list_->content() == p);
   }
+
+
+  int is_valid_tree(E *root, bool undo=false) {
+    if(root == NULL) {
+      return 0;
+    }
+
+    E* prev = root;
+    E* node = root->child_;
+
+    int count = 0;
+    while(node != NULL) {
+      //assert(node->left_ != NULL);
+      assert(node->left_ == prev);
+      if(undo) {
+        assert(node->color_ >= 256);
+        node->color_ &= 255;
+      } else {
+        assert(node->color_ < 256);
+        node->color_ |= 256;
+      }
+      assert(root->value_ >= node->value_);
+
+      count += 1 + is_valid_tree(node, undo);
+
+      prev = node;
+      node = node->right_;
+    }
+    return count;
+  }
+
+
 
   E* extract(E **top, E **min, int size) {
     // Precondition: at least two elements in queue, size > 1
 
+    if((*min)->color_ == 1) {
+      assert((*min)->node_in_list_ != NULL);
+    }
+    assert((*top)->color_ == 0);
+
+    E* extracted_node = NULL;
+    if((*min)->color_ == 1) {
+      extracted_node = *min;
+    }
+
     if(list_.size() > 0) {
       cleanup(top, min, size);
     }
-    //printf("top: %i\n", (*top)->value_);
 
-    E* extracted_node = *top;
+    if(extracted_node != NULL) {
+      (*top)->swap(extracted_node);
+    } else {
+      extracted_node = *top;
+    }
     E* list = NULL;
 
     // iterate through children
     E* node = (*top)->child_;
-    while(node != NULL) {
-      if(node->right_ == NULL) {
-        break;
-      }
-      assert(node != NULL && node->right_ != NULL);
+    while(node != NULL && node->right_ != NULL) {
       E* next = node->right_->right_;
       // merge with first in list
       node = node->meld( node->right_ );
@@ -120,12 +164,14 @@ public:
 
     // prepend last element to list
     if(node != NULL) {
+      assert(node->color_ != 1);
       node->right_ = list;
       list = node;
     }
 
     // merge element in list
     if(list != NULL) {
+      //printf("color: %i\n", list->color_);
       *top = list;
       node = list->right_;
       while(node != NULL) {
@@ -138,8 +184,12 @@ public:
       *top = NULL;
     }
 
+    //is_valid_tree(*top);
+    //is_valid_tree(*top, true);
+
     *min = *top;
-    //printf("extracted: %i\n", extracted_node->value_);
+    assert((*top)->color_ == 0);
+
     return extracted_node;
   }
 
@@ -149,7 +199,9 @@ public:
 
     if(p->color_ == 1) {
       // cut p from list
-      list_.erase(p->node_in_list);
+      //printf("EXTRACT: cut p\n");
+      list_.erase(p->node_in_list_);
+      p->color_ = 0;
     }
 
     // cut p from tree
@@ -169,7 +221,7 @@ public:
 
 
   void cleanup(E **top, E **min, int size) {
-    printf("CLEANUP\n");
+    //printf("CLEANUP\n");
     // size of list to sort
     const size_t logN = ceil(log(size));
 
@@ -178,11 +230,13 @@ public:
     doubly_linked_list<E*> sort_list;
 
     list_node<E*> *node;
-    while( (node = list_.begin()) != list_.end()) {
+    while(list_.size() > 0) {
+      node = list_.begin();
       E* p = node->content();
+
       list_.erase(node);
       p->color_ = 0;
-      //printf("has node: %i\n", p->value_);
+      p->node_in_list_ = NULL;
 
       assert(p != NULL);
 
@@ -195,55 +249,22 @@ public:
           p->child_->left_ = p;
         }
         // insert myleft in p's place
-        if(p->left_->child_ && p->left_->child_==p) {
-          // p is left-most child (left is parent)
-          //printf("left-most\n");
-          p->left_->child_ = myleft;
-          myleft->left_ = p->left_;
-          if(p->right_ != NULL) {
-            p->right_->left_ = myleft;
-          }
-          myleft->right_ = p->right_;
-        } else if (p->right_ == NULL) {
-          //printf("right-most\n");
-          // p is right-most child
-          p->left_->right_ = myleft;
-          myleft->left_ = p->left_;
-          myleft->right_ = NULL;
-        } else {
-          // p is somewhere inside child list
-          //printf("inside\n");
-          p->left_->right_ = myleft;
-          p->right_->left_ = myleft;
-          myleft->left_ = p->left_;
-          myleft->right_ = p->right_;
-        }
+        p->replace_with(myleft);
       } else {
-        //printf("no child\n");
-        // remove p from child-list
-        if(p->left_->child_ && p->left_->child_==p) {
-          // p is left-most child (left is parent)
-          p->left_->child_ = p->right_;
-          if(p->right_) {
-            p->right_->left_ = p->left_;
-          }
-        } else if (p->right_ == NULL) {
-          // p is right-most child
-          p->left_->right_ = NULL;
-        } else {
-          // p is somewhere inside child list
-          p->left_->right_ = p->right_;
-          p->right_->left_ = p->left_;
-        }
+        p->tree_cut(top);
       }
       sort_list.push_front(p);
       if(sort_list.size() == logN) {
         sort_list.sort(*ncmp);
         list_node<E*> *mynode;
         E* tree = sort_list.begin()->content();
+        //printf("GROUP:\n");
+        //printf("%i\n", tree->value_);
         sort_list.erase(sort_list.begin());
-        while( (mynode = sort_list.begin()) != sort_list.end() ) {
+        while(sort_list.size() > 0) {
+          mynode = sort_list.begin();
           tree = (mynode->content())->meld(tree, true);
+          //printf("%i\n", mynode->content()->value_);
           sort_list.erase(mynode);
         }
         *top = (*top)->meld( tree );
@@ -253,10 +274,14 @@ public:
       sort_list.sort(*ncmp);
       list_node<E*> *mynode;
       E* tree = sort_list.begin()->content();
+      //printf("GROUP:\n");
+      //printf("%i\n", tree->value_);
       sort_list.erase(sort_list.begin());
-      while( (mynode = sort_list.begin()) != sort_list.end() ) {
-        sort_list.erase(mynode);
+      while( sort_list.size() ) {
+        mynode = sort_list.begin();
         tree = (mynode->content())->meld(tree, true);
+        //printf("%i\n", mynode->content()->value_);
+        sort_list.erase(mynode);
       }
       *top = (*top)->meld( tree );
     }

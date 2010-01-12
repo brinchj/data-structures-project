@@ -36,7 +36,7 @@ namespace cphstl {
     A allocator_;
     C comparator_;
 
-    list_node<self_t*> *node_in_list;
+    list_node<self_t*> *node_in_list_;
 
   private:
 
@@ -46,7 +46,7 @@ namespace cphstl {
   public:
 
     pairing_heap_node()
-      : left_(NULL), right_(NULL), child_(NULL), color_(0), node_in_list(NULL)
+      : left_(NULL), right_(NULL), child_(NULL), color_(0), node_in_list_(NULL)
     {
           allocator_  = A();
           comparator_ = C();
@@ -54,7 +54,7 @@ namespace cphstl {
 
     pairing_heap_node(V const& value,
                       std::allocator<pairing_heap_node<V,A,C> > const& a)
-      : left_(NULL), right_(NULL), child_(NULL), color_(0), node_in_list(NULL)
+      : left_(NULL), right_(NULL), child_(NULL), color_(0), node_in_list_(NULL)
     {
           allocator_  = A();
           value_ = value;
@@ -63,11 +63,14 @@ namespace cphstl {
 
     pairing_heap_node(V const& v, A const& a)
       : left_(NULL), right_(NULL), child_(NULL), color_(0),
-        value_(v), allocator_(a), node_in_list(NULL) {
+        value_(v), allocator_(a), node_in_list_(NULL) {
           comparator_ = C();
     }
 
     ~pairing_heap_node() {
+      left_ = right_ = child_ = NULL;
+      node_in_list_ = NULL;
+      //printf(">> destroying %p\n", this);
     }
 
 
@@ -124,7 +127,6 @@ namespace cphstl {
         *list_end = left_;
       } else {
         // this is in between two elements
-        printf("between\n");
         left_->right_ = right_;
         right_->left_ = left_;
       }
@@ -171,6 +173,31 @@ namespace cphstl {
     }
 
 
+    void replace_with(self_t *other) {
+      // insert other in this's place
+      if(this->left_->child_ && this->left_->child_==this) {
+        // this is left-most child (left is parent)
+        this->left_->child_ = other;
+        other->left_ = this->left_;
+        if(this->right_ != NULL) {
+          this->right_->left_ = other;
+        }
+        other->right_ = this->right_;
+      } else if (this->right_ == NULL) {
+        // this is right-most child
+        this->left_->right_ = other;
+        other->left_ = this->left_;
+        other->right_ = NULL;
+      } else {
+        // this is somewhere inside child list
+        this->left_->right_ = other;
+        this->right_->left_ = other;
+        other->left_ = this->left_;
+        other->right_ = this->right_;
+      }
+    }
+
+
     bool is_root() const {
       return left_ == right_ == 0;
     }
@@ -214,6 +241,22 @@ namespace cphstl {
     self_t*& parent() {
       return left_;
     }
+
+    void swap(self_t * other) {
+      self_t* left = other->left_;
+      self_t* right = other->right_;
+      self_t* child = other->child_;
+      int color = other->color_;
+      other->left_ = left_;
+      other->right_ = right_;
+      other->child_ = child_;
+      other->color_ = color_;
+      left_ = left;
+      right_ = right;
+      child_ = child;
+      color_ = color;
+    }
+
   };
 }
 

@@ -50,16 +50,11 @@ namespace cphstl {
     /* Insert element */
     void insert(E **top, E **min, E* p) {
       // Precondition: Heap is not empty
-      if(list_ == NULL) {
-        list_ = list_end_ = p;
-      } else {
-        p->left_  = list_end_;
-        p->right_ = NULL;
-        list_end_->right_ = p;
-        list_end_ = p;
-      }
+      // printf("insert: %p\n", p);
+
+      // add to list
+      p->list_add(&list_, &list_end_, NULL);
       // set color
-      printf("set color\n");
       p->color_ = 1;
       // update minimum
       if(*min == NULL ||
@@ -70,8 +65,7 @@ namespace cphstl {
 
     /* Increase value of element */
     void increase(E **top, E **min, E* p, V const& v) {
-      //printf("INCR: %i -> %i\n", p->element().value, v.value);
-      printf("%i -> %i\n", p->value_, v);
+      //printf("increase\n");
       p->value_ = v;
 
       // if p is top we're done
@@ -104,78 +98,211 @@ namespace cphstl {
       insert(top, min, p);
     }
 
-    E* extract(E **top, E **min) {
-      // Precondition: at least two elements in queue, size > 1
 
+    int is_valid_tree(E *root, bool undo=false) {
+      if(root == NULL) {
+        return 0;
+      }
+
+      E* prev = root;
+      E* node = root->child_;
+
+      int count = 0;
+      while(node != NULL) {
+        //assert(node->left_ != NULL);
+        assert(node->left_ == prev);
+        if(undo) {
+          assert(node->color_ >= 256);
+          node->color_ &= 255;
+        } else {
+          assert(node->color_ < 256);
+          node->color_ |= 256;
+        }
+        assert(root->value_ >= node->value_);
+
+        count += 1 + is_valid_tree(node, undo);
+
+        prev = node;
+        node = node->right_;
+      }
+      return count;
+    }
+
+
+
+
+    E* extract(E **top, E **min, int size) {
+      // Precondition: at least two elements in queue, size > 1
       // process waiting nodes
+      //printf("extract(min) called %p %p %p\n", *top, list_, (*top)->child_);
+
+      bool min_from_list = ((*min)->color_ == 1);
+      if(min_from_list) {
+        // cut minimum from list
+        (*min)->list_cut(&list_, &list_end_, NULL);
+      }
+
       while(list_ != list_end_) {
         // cut first two elements from list
         E* first = list_;
-        list_ = list_->right_->right_;
+        first->list_cut(&list_, &list_end_, NULL);
+        assert(list_ != first);
+
+        E* second = list_;
+        second->list_cut(&list_, &list_end_, NULL);
+        assert(list_ != second);
+
+        // update colors
+        first->color_ = second->color_ = 0;
 
         // meld first two nodes
-        first->color_ = first->right_->color_ = 0;
-        E* node = first->meld( first->right_ );
+        E* node = first->meld( second );
+        assert(node->child_->left_ == node);
         // insert new node as last in list
-        if(list_ == NULL) {
-          list_ = node;
-          break;
-        }
-        node->left_ = list_end_;
-        node->right_ = NULL;
-        list_end_->right_ = node;
-        list_end_ = node;
+        node->list_add(&list_, &list_end_, NULL);
+        assert(list_ == node || node->left_ != NULL);
       }
 
       if(list_ != NULL) {
+        //printf("meld with list\n");
         list_->color_ = 0;
         *top = (*top)->meld( list_ );
+        assert((*top)->child_->left_ == *top);
         list_ = list_end_ = NULL;
+      }
+
+      //printf("top: %p\n", *top);
+      //is_valid_tree(*top);
+      //printf("top: %p\n", *top);
+      //is_valid_tree(*top, true);
+
+      // if minimum came from lazy list, just return it
+      if(min_from_list) {
+        E* extracted_node = *min;
+        *min = *top;
+        return extracted_node;
       }
 
       // pick top for extraction
       E* extracted_node = *top;
-      E* list = NULL;
+      assert(*min == *top);
+      //printf("> extracting node: %p (%lld)\n", *top, (*top)->element());
 
       // iterate through children
-      E* node = (*top)->child_;
-      while(node != NULL) {
-        if(node->right_ == NULL) {
-          break;
+      if((*top)->child_ != NULL) {
+        E* list = NULL;
+        E* node = (*top)->child_;
+        while(node != NULL && node->right_ != NULL) {
+          //printf("fix children: %p %p\n", node, node->right_);
+          E* next = node->right_->right_;
+          // meld with first in list
+          E* right = node->right_;
+          node = node->meld( right );
+          // set merged node as first in list
+          assert(node->child_->left_ == node);
+          node->right_ = list;
+          list = node;
+          // move to next child
+          node = next;
         }
-        assert(node != NULL && node->right_ != NULL);
-        E* next = node->right_->right_;
-        // merge with first in list
-        node = node->meld( node->right_ );
-        // set merged node as first in list
-        node->right_ = list;
-        list = node;
-        // move to next child
-        node = next;
+
+        // prepend last element to list
+        if(node != NULL) {
+          node->right_ = list;
+          list = node;
+        }
+
+        // meld elements in list
+        *top = list;
+        node = list->right_;
+        while(node != NULL) {
+          E* next = node->right_;
+          *top = (*top)->meld( node );
+          assert((*top)->child_->left_ == *top);
+          node = next;
+        }
+        (*top)->left_ = (*top)->right_ = NULL;
+      }
+      else
+        {
+          *top = NULL;
+        }
+
+      *min = *top;
+      assert(list_ == NULL && list_end_ == NULL);
+
+      //int count = is_valid_tree(*top);
+      //is_valid_tree(*top, true);
+      //printf("all is good: count is %i\n", count);
+
+      //printf("actually extracting: %p %i\n", extracted_node, extracted_node->value_);
+      extracted_node->left_ = extracted_node->right_ = NULL;
+      //printf("top is: %p %i\n", *top, (*top)->value_);
+
+      extracted_node->~E();
+
+      //printf("%p %p\n", (*top)->child_);
+
+      return extracted_node;
+    }
+
+    E* extract(E **top, E **min, E *p) {
+      //printf("extract(%p) called\n", p);
+
+      if(p->color_ == 1) {
+        // cut p from list
+        p->list_cut(&list_, &list_end_, NULL);
+        return p;
       }
 
-      // prepend last element to list
-      if(node != NULL) {
-        node->right_ = list;
-        list = node;
-      }
+      // cut p from tree
+      p->tree_cut(top);
 
-      // merge element in list
-      *top = list;
-      node = list->right_;
+      // reinsert children
+      E* node = p->child_;
       while(node != NULL) {
         E* next = node->right_;
         *top = (*top)->meld( node );
         node = next;
       }
 
-      (*top)->left_ = (*top)->right_ = NULL;
-      *min = *top;
-      return extracted_node;
+      p->child_ = NULL;
+      return p;
     }
 
+
     void meld(E **top, E **min, pairing_heap_framework<V,P,C,A,E> &other) {
+      //printf("meld()\n");
     }
+
+
+    int is_valid_list(E* root, int c0, int c1) {
+      E* node = root;
+      assert(node->left_ == NULL);
+      assert(node->color_ == c0);
+      node->color_ = c1;
+
+      size_type count = 1;
+
+      node = node->right_;
+      while(node != NULL) {
+        assert(node->left_ != NULL);
+        assert(node->left_->right_ == node);
+        assert(node->color_ == c0);
+        node->color_ = c1;
+        node = node->right_;
+        count += 1;
+      }
+      return count;
+    }
+
+    int is_valid() {
+      if(list_ == NULL)
+        return 0;
+      is_valid_list(list_, 1, 2);
+      return is_valid_list(list_, 2, 1);
+    }
+
 
 
   private:

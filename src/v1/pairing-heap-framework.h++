@@ -73,6 +73,9 @@ namespace cphstl {
     int is_valid_tree(E* root, bool undo);
     void is_valid();
 
+    int show();
+    int show_tree(E* root, int level);
+
   protected:
 
     C comparator_;
