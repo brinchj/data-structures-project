@@ -6,6 +6,7 @@
 \usepackage[danish]{babel}
 \usepackage{t1enc}
 \usepackage{fancyref}
+\usepackage{listings}
 
 %\selectdanish % Add this if your report is in Danish
 
@@ -316,16 +317,11 @@ easily overlooked.
 \subsection{Usage with CPH STL}
 
 We have successfully managed to adhere to the meldable priority queue
-interface of CPH STL (\verb!cphstl::stl-meldable-priority-queue!). Our
-priority queue framework can be given as the realizator template
-argument and should work without further modifications, which has been
-verified by running the benchmarks in
-\verb!Source/Priority-queue-framework/Benchmark!.
-
-Working with and understanding CPH STL proved somewhat difficult and while we
-were able to quickly make an implementation of the pairing heaps, it took a
-while to integrate everything and weed out the bugs. Our lacking experience with
-C++ and templating in particular probably didn't help.
+interface of CPH STL. Our priority queue framework can be given as the
+realizator template parameter and should work without further
+modifications, which has been verified by running the benchmarks
+belonging to the CPH STL priority queue framework\footnote{See the
+  path: \code{Source/Priority-queue-framework/Benchmark}}.
 
 - Benchmarking tests
 - Difficulties with different versions of Priority-queue-framework,
@@ -337,15 +333,16 @@ C++ and templating in particular probably didn't help.
 \section{Performance}
 
 In order to run the code you need 2010 versions of Iterator and
-Meldable-priority-queue from CPH STL (anything after 2010-01-01 should be fine),
-but pre-2010 Priority-queue-framework files.
+Meldable-priority-queue from CPH STL (anything after 2010-01-01 should
+be fine), but pre-2010 Priority-queue-framework files.
 
-Additionally we had to fix a bug in Iterator/Code/priority-queue-iterator.h++
-line 77; change template parameter to F (or something else that isn't used
-elsewhere in the file) since E was already declared .
+Additionally we had to fix a bug in
+Iterator/Code/priority-queue-iterator.h++ line 77; change template
+parameter to F (or something else that isn't used elsewhere in the
+file) since E was already declared .
 
-- Sorting of the auxiliary forest in costless meld takes a long time. Could we
-  optimize that somehow?
+- Sorting of the auxiliary forest in costless meld takes a long
+time. Could we optimize that somehow?
 
 - Memory usage? Three pointers per node vs. two pointers per node?
 
@@ -354,8 +351,41 @@ This section comes before the References and is unnumbered.
 \LaTeX-en\-viron\-ment is \verb|acknowledgements|.
 \end{acknowledgements}
 
-\bibliographystyle{DIKU} % Use DIKU-alternative for the other citation style
+
+\section{Conclusion}
+
+Working with and understanding CPH STL proved somewhat difficult and
+while we were able to quickly make an implementation of the pairing
+heaps, it took a while to integrate everything and weed out the
+bugs. Our lacking experience with C++ and templating in particular
+took up a great part of our time.
+
+\bibliographystyle{DIKU}
 \bibliography{report}
+
+
+
+
+\appendix
+\section{Source Code}
+\subsection{pairing-heap-framework.h++}
+\lstinputlisting{../src/v1/pairing-heap-framework.h++}
+
+\subsection{pairing-heap-framework.i++}
+\lstinputlisting{../src/v1/pairing-heap-framework.i++}
+
+\subsection{pairing-heap-node.c++}
+\lstinputlisting{../src/v1/pairing-heap-node.c++}
+
+\subsection{pairing-heap-policy-strict.c++}
+\lstinputlisting{../src/v1/pairing-heap-policy-strict.c++}
+
+\subsection{pairing-heap-policy-lazy-insert.c++}
+\lstinputlisting{../src/v1/pairing-heap-policy-lazy-insert.c++}
+
+\subsection{pairing-heap-policy-lazy-increase.c++}
+\lstinputlisting{../src/v1/pairing-heap-policy-lazy-increase.c++}
+
 
 \end{document}
 
