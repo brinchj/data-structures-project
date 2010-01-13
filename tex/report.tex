@@ -1,15 +1,21 @@
 \documentclass{DIKU-article}[2010/01/13]
 
+\usepackage{palatino}
 \usepackage[utf8]{inputenc}
 \usepackage[OT1]{fontenc}
 \usepackage[danish]{babel}
 \usepackage{t1enc}
+\usepackage{fancyref}
 
 %\selectdanish % Add this if your report is in Danish
 
-\usepackage{epsfig} 
+\usepackage{epsfig}
 
-%\setlength{\errorcontextlines}{999} %Can be used for debugging purposes
+\newcommand{\code}[1]{{\small\texttt{#1}}}
+\usepackage{microtype}
+
+%\setlength{\errorcontextlines}{999}
+%Can be used for debugging purposes
 %\alternativecitationstyle
 %\draft
 
@@ -27,7 +33,7 @@ Asser Schrøder Femø
 \institute{
 Department of Computing, University of Copenhagen\\
 Universitetsparken 1, DK-2100 Copenhagen East, Denmark\\
-\email{...@diku.dk}
+\email{zerrez@diku.dk}
 \and
 \email{asser@diku.dk}
 }
@@ -46,105 +52,275 @@ Universitetsparken 1, DK-2100 Copenhagen East, Denmark\\
 
 \section{Introduction}
 
-The aim of this project is to develop a meldable priority queue framework in
-order to implement and compare the following pairing heap variants: The original
-pairing heap by Fredman et al, the pairing heap with Stasko-Vitter lazy insertion and
-the pairing heap with costless meld by Elmasry. We also include performance
-comparisons with existing CPH STL priority queues.
+The aim of this project is to develop a meldable priority queue
+framework in order to implement and compare the following pairing heap
+variants:
+
+\begin{enumerate}
+\item Strict Pairing Heap: The original pairing heap by Fredman et
+  al\cite{fredman}
+\item Lazy-Insert Pairing Heap: The strict pairing heap using
+  Stasko-Vitter's lazy insertion\cite{stasky}
+\item Costless-Meld Pairing Heap: The pairing heap with costless meld
+  by Elmasry\cite{elmasry}.
+\end{enumerate}
+
+The new pairing heap framework will work as a realizator with the
+current meldable priority queue framework already available in the
+Copenhagen Standard Library for C++ (CPH STL). As such, it will be
+easy to switch between the three implemented data structures.
+
+Furthermore, we wish to compare the performance of these priority
+queue variations against each other and against the current
+implementation of priority queues in the CPH STL.
+
+We expect that the reader is familiar with the CPH STL and it's
+priority queue frameworks\cite{cphstl-framework}. Furthermore, the
+reader should be familiar with the aspects of amortized running time
+analysis.
+
+
+
+\section{Terminology}
+In this paper, we use the term "`max heap"' of the newly implemented
+heaps, since the CPH STL refers to max heaps in the implementation (by
+having \code{increase}). Of course, the implementation supports any
+comparison operator. The newly implemented priority queues are
+referred to as pairing heaps while the existing are called priority
+queues (though the words mean the same, this is what their respective
+implementations call them).
+
+We denote the original pairing heap\cite{fredman} a Strict Pairing
+Heap. The Stasko-Vitter heap\cite{stasko} a Lazy-Insertion Pairing
+Heap. And finally the Elmasry\cite{elmasry} heap a Costless-Meld
+Pairing Heap.
+
+We name the operations of a max heap as:
+\begin{description}
+\item{\code{insert}}: Insertion of a new node
+\item{\code{extract-max}}: Extract the current maximum
+\item{\code{extract}}: Extract a specific node other than maximum
+\item{\code{increase}}: Increase the priority of a node
+\item{\code{meld}}: Meld two max heaps
+\item{\code{maximum}}: Return the node that is the current maximum
+\end{description}
+
+We use the term "`tree"' for a tree having the heap-condition. We
+use the term "`node"' when referring to either a tree of one node or
+a node inside a tree. In general, nodes are sub-trees.
 
 \section{Priority queue variants}
-
+\subsection{Overview}
 \begin{description}
-\item{Original pairing heap} by Fredman et al\cite{fredman} is intended as an
-alternative to the Fibonacci heap. While theoretically slower (conjectured just
-as fast but not proven) it is much simpler to implement and faster in practice.
-All operations run in $O(\log n)$ amortized time.
+\item{Strict Pairing Heap} by Fredman et al\cite{fredman} was
+  developed as an alternative to the Fibonacci heap. While
+  theoretically slower (conjectured just as fast but not proven) it is
+  much simpler to implement and seems to be faster in practice.
 
-\item{Stasky-Vitter lazy insertion} expands on the original pairing heap by
-modifying the insert procedure to maintain an auxiliary list, or forest, of
-nodes (or single-node trees) to be inserted into the heap tree which is then
-merged into the main tree when a delete-min operation is executed. This
-modification improves the bound for insert to $O(1)$ amortized.
+  Beneath is a summary of it's operations:
+  \begin{description}
+  \item{\code{insert}}: Create a one-node heap consisting of the new
+    element and \code{meld} the two heaps.
+  \item{\code{extract-max}}: Cut the root node out of the tree. Meld
+    the child nodes using a two-pass melding operation. The new root
+    is the root of the resulting tree.
+  \item{\code{extract}}: Cut the element to extract. Meld the child
+    nodes using a two-pass melding operation. Meld the main tree with
+    the resulting tree.
+  \item{\code{increase}}: If the node to increase the root just
+    increase return. If not, \code{extract} the node, increase it and
+    \code{insert} it.
+  \item{\code{meld}}: Compare the two root nodes and make the smaller a
+    child of the larger.
+  \end{description}
+  During these operations a pointer to the maximum of the heap is
+  maintained. As such, the \code{maximum} operation consists of simply
+  returning this pointer.\\
 
-\item{Pairing heap with Costless Meld} by Elmasry\cite{elmasry} expands on
-the original heap by having decrease-key also use an auxiliary list to
-determine whether a nodes key was decreased deferring the clean-up work to a
-later time. This makes decrease-key run in $O(\log \log n)$ amortized time.
-Melding two heaps only cleans up the auxiliary structures of the smaller heap
-before pairing the heaps as in the original method, making meld have zero
-amortized cost.
+\item{Lazy-Insert Pairing Heap} by Stasko and Vitter expands on the
+  Strict Pairing Heap by modifying the \code{insert} operation to be
+  lazy. Instead of inserting the new element right away it is added to
+  an auxiliary list, or forest, of nodes (or single-node trees) to be
+  inserted into the heap tree. On the following \code{extract-max}
+  operation this list is emptied and it's waiting nodes melded using a
+  multi-pass strategy. Hereafter the resulting tree is melded with the
+  main tree. The motivation is to pack together new nodes to avoid too
+  many root-children.
 
-\item{Pairing heap with Costless Meld and Lazy Insert} is a combination of the
-two abovementioned heaps, with both extensions in use.
+\item{Pairing heap with Costless Meld} by Elmasry\cite{elmasry}
+  expands on the Strict Pairing Heap by modifying the \code{decrease}
+  operation to use an auxiliary list. This list keeps track of which
+  nodes has been decreased during operation. The actual
+  \code{decrease} operation is performed by a cleanup method during
+  the following \code{extract-max}. Furthermore, the \code{meld}
+  operation is modified to cleanup the smaller heap before melding.
+
+  The \code{cleanup} operation works as follows:
+  \begin{enumerate}
+  \item Group the nodes in the increase-list in groups of size $\log
+    n$
+  \item Sort the nodes in each group in increasing order
+  \item Meld the nodes in each group, the result being several unary
+    trees
+  \item Meld the unary trees to the main tree
+  \end{enumerate}
+
+%\item{Pairing heap with Costless Meld and Lazy Insert} is a
+%  combination of the two abovementioned heaps, with both extensions in
+%  use.
 \end{description}
+
+\subsection{Amortized Running Time}
+\Fref{tab:running_time} shows the amortized running time for each
+data structure.
+\begin{table}[h]
+\label{tab:running_time}
+\caption{Amortized Running Times}
+\begin{tabular}{l|lllll}
+ & \code{insert} & \code{extract-max}  &
+ \code{increase} & \code{meld} \\ \hline
+Strict & $O(\log n)$ & $O(\log n)$ & $O(\log n)$ & $O(\log n)$ \\
+Lazy-Insert & $O(1)$ & $O(\log n)$ & $O(\log n)$ & $O(\log n)$ \\
+Costless-Meld & $O(1)$ & $O(\log n)$ & $O(\log \log n)$ & $zero$ \\
+\end{tabular}
+\end{table}
+
+The theoretical amortized running time is best for the Costless-Meld
+variant. A goal of this project is to investigate whether this is true
+in practical applications.
 
 \section{Implementation}
 
-We have implemented all three variants into one pairing queue framework. Due to
-the small differences between the variants we use a policy template to determine
-which variant to use. 
+We have implemented a pairing heap framework that generates meldable
+queue realizators. We have implemented the three discussed pairing
+heap variations as policies for this framework.
 
-Our framework is based on the code for Priority-queue-framework in CPH STL as it
-shares the interface and the same general structure. We considered the
-possibility of simply extending or directly using this framework but due to
-differences in the internal node structure we decided against that.
-Specifically, Priority-queue-framework's \verb!heap_node! structure allows only
-parent, left and right pointers where we need a sibling list structure because
-pairing heaps use multiway trees.
+Our framework is based on the code for Priority-queue-framework in CPH
+STL as it shares the interface and the same general structure. We
+considered the possibility of simply extending or directly using this
+framework but due to differences in the internal node structure we
+decided against this.  Specifically, Priority-queue-framework's
+\code{heap\_node} structure allows only \code{parent}, \code{left} and
+\code{right} pointers where we \code{left}, \code{right} and
+\code{child} pointers because the pairing heaps are based on multiway
+trees. Furthermore, we need the possibility of marking a node.
 
 \subsection{Main framework}
 
-The framework consists mainly of the class \verb!pairing_heap_framework! which
-is based on \verb!cphstl::priority_queue_framework!. It implements
-some of the \verb!extract! logic that is identical for all our pairing heap
-variants. For some cases, and for all other heap operations it defers to the
-\emph{policy}, which is given as template parameter \verb!P!.\\
-\\
-\verb!pairing_heap_node! contains the pointers neede for the child, sibling
-structure (a left, right and parent pointer). An obvious modification would be
-to extend the node structure and methods to be able to contain only two pointers
-as described in the original pairing heap paper\cite{fredman}. A
-\verb!pairing_heap_node! is able to meld itself with another tree (assuming both
-are root nodes) as well as into and out of an auxiliary list.
+The framework consists mainly of the class:\\
+\indent \code{cphstl::}\code{pairing\_heap\_framework}
+
+\noindent which is based on the existing class:\\
+\indent \code{cphstl::priority\_queue\_framework}\\
+
+The new class functions mainly as an interface, but also implements
+some of the logic that is shared amongst all heap variations. This
+includes updating the current \code{size} of the heap and handling
+trivial cases of the \code{extract} operations. For non-trivial
+cases, and for all other heap operations, it defers to the
+\emph{policy}, which is given as the template parameter \code{P}.
+
+
+\code{pairing\_heap\_node} contains the pointers needed for the child
+and sibling structure (a left, right and parent pointer). It also
+contains a colour, to allow for marking of nodes, and a
+\code{list\_node} pointer that is only used by the Lazy-Increase
+variant.
+Nodes contains the logic needed to \code{add} and \code{cut} a
+node from a double-linked list as well as to \code{cut} a node or
+\code{swap} one node for another in a tree. Two nodes can also be
+melded together, forming a new tree with the largest node as root and
+the other as it's first child.
+
+An improvement to this structure would be to take an extra template
+parameter for a structure containing other needed information, such as
+for example colour and \code{list\_node} pointers. However, since the
+implementation itself is not the main focus here, we decided to leave
+this out for later improvements.
+
+A possible modification would be to change the node structure and
+methods to be able to contain only two pointers as described in the
+original paper on Strict Pairing Heaps\cite{fredman}.
 
 \subsection{Policies}
 
-General for the policies is, as they do almost all the modifications of the heap
-tree and/or auxiliary lists there is a lot of pointer juggling; it is easy to
-mess up the structure of the heap. Therefore we have debug methods in place to
-ensure the validity of the data structure (the \verb!is_valid! and
-\verb!is_valid_tree! methods), which proved very helpful during implementation
-and bugfixing.
+A policy describes a pairing heap variant. Specifically, it specifies
+the logic needed to:
+\begin{itemize}
+\item \code{insert} when the heap is non-empty,
+\item \code{extract} when the node is not maximum.
+\item \code{extract-max} when the heap contains more then 2 nodes or the
+  requested node is not root.
+\item \code{increase}
+\item \code{meld}
+\end{itemize}
 
-\subsubsection{Strict policy}
+General for the policies is, that they involve a of pointer
+juggling. Although we have tried to hide some of the pointer
+operations inside the \code{heap\_node} structure, most of the
+operations performed by the policies are still just that.
 
-This implements the original pairing heap.
+Because of this, it is easy to loose the overview of the
+structure. This makes debugging difficult. To aid this we have
+implemented debug some methods that (if run) ensure the validity of
+the data structure (specifically the \code{is\_valid} and
+\code{is\_valid\_tree} methods), which proved very helpful during
+implementation and bug fixing.
 
-\subsubsection{Lazy insert policy}
+\subsubsection{Strict Policy}
 
-The lazy insert policy uses \verb!cphstl::doubly_linked_list! as a container for
-the auxiliary list, or insertion buffer.
+This policy implements the Strict Pairing Heap. It uses no extra
+containers or pointers than what is provided in \code{heap\_node}.
 
-\subsubsection{Lazy increase policy}
+\subsubsection{Lazy-Insert Policy}
+\label{sec:policy-lazy-insert}
 
-This policy implements the costless meld, or lazy increase heap.
+This policy implements the Lazy-Insert Pairing Heap. The lazy insert
+policy uses an extra doubly-linked list, which is implemented using
+the existing \code{left} and \code{right} pointers in the
+\code{heap\_node} structure. This is possible, since each node exists
+\emph{either} in the tree or in the list. The \code{color\_} variable
+in \code{heap\_node} is also used to keep track of which nodes are
+currently in the list and which are not. This prevents multiple
+insertions of the same node.
 
-In the costless meld heap, when doing phase 2 of the cleanup we can save a few
-comparisons by observing that when combining the $\Theta(\log n)$ trees in each
-group we already know the order in which to link the trees since they have been
-sorted according to the root nodes. Our link operation can then just link the
-trees without doing the usual comparison between the root nodes. While this is
-not an actual saving (we just moved the comparison from the link operation to
-the sorting of the trees) it is an important implementation detail easily
-overlooked.
+\subsubsection{Lazy-Increase Policy}
+
+This policy implements the Costless-Meld Pairing Heap. The
+costless-meld policy uses an extra \code{cphstl::doubly-linked-list}
+to keep track of the nodes that have been increased. We cannot reuse
+the sibling pointers in the \code{heap\_node} structure here, since
+nodes in the increase-list remains inside the tree.
+
+As with the lazy-insert policy in \fref{sec:policy-lazy-insert}, the
+\code{color\_} variable of the \code{heap\_node} is used to avoid
+multiple insertions of the same nodes. To allow for efficient
+\code{extract} operations, each node maintains a \code{node\_in\_list}
+pointer, which is updated if the node is added to the
+increase-list. An improvement to this implementation is to eliminate
+the \code{color\_} variable in this policy and only use the
+\code{node\_in\_list} pointer. However, this is not currently
+possible, since the implementation does not allow for arbitrary
+satellite structures.
+
+In the costless-meld heap, when doing phase 2 of the cleanup we can
+save a few comparisons by observing that when combining the
+$\Theta(\log n)$ trees in each group we already know the order in
+which to link the trees since they have been sorted according to the
+root nodes. Our link operation can then just link the trees without
+doing the usual comparison between the root nodes. While this is not
+an actual saving (we just moved the comparison from the link operation
+to the sorting of the trees) it is an important implementation detail
+easily overlooked.
 
 \subsection{Usage with CPH STL}
 
-We have successfully managed to adhere to the meldable priority queue interface
-of CPH STL (\verb!cphstl::stl-meldable-priority-queue!). Our priority queue
-framework can be given as the realizator template argument and should work
-without further modifications, which has been verified by running the benchmarks
-in \verb!Source/Priority-queue-framework/Benchmark!.
+We have successfully managed to adhere to the meldable priority queue
+interface of CPH STL (\verb!cphstl::stl-meldable-priority-queue!). Our
+priority queue framework can be given as the realizator template
+argument and should work without further modifications, which has been
+verified by running the benchmarks in
+\verb!Source/Priority-queue-framework/Benchmark!.
 
 Working with and understanding CPH STL proved somewhat difficult and while we
 were able to quickly make an implementation of the pairing heaps, it took a
