@@ -363,6 +363,14 @@ general the three implemented method performs as good or better than
 the pennant queue and weak queue from the CPH STL.
 
 
+We have added two performance tests, increase2 and increase3. Since the costless
+meld heap should be theoretically faster with many decrease-key operations these
+tests focus on those. Increase2 pushes a number of elements, increases each of
+them above the maximum value and finally pops all the elements. Increase3 is the
+same concept but tries to sequence the elements such that smaller elements are
+pushed before larger elements and the increases are done randomly while only
+popping once per repeated run of push and insert sequences.
+
 \begin{acknowledgements}
 We would like to thank DIKU Kantinen$^{\mathtt{TM}}$ for keeping us
 warm on the cold winther nights and for their infinite supply of coffee.
