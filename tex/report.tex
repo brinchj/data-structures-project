@@ -349,6 +349,14 @@ elsewhere in the file) since E was already declared .
 
 - Memory usage? Three pointers per node vs. two pointers per node?
 
+We have added two performance tests, increase2 and increase3. Since the costless
+meld heap should be theoretically faster with many decrease-key operations these
+tests focus on those. Increase2 pushes a number of elements, increases each of
+them above the maximum value and finally pops all the elements. Increase3 is the
+same concept but tries to sequence the elements such that smaller elements are
+pushed before larger elements and the increases are done randomly while only
+popping once per repeated run of push and insert sequences.
+
 \begin{acknowledgements}
 This section comes before the References and is unnumbered.
 \LaTeX-en\-viron\-ment is \verb|acknowledgements|.
