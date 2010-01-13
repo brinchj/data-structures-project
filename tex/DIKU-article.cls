@@ -198,13 +198,13 @@
   \parindent=\z@%
   \setcounter{@inst}{1}%
   \def\and{\par\stepcounter{@inst}%
-  \noindent$^{\the@inst}$\enspace\ignorespaces}%
+  \noindent\enspace\ignorespaces}%
   \setbox0=\vbox{\def\thanks##1{}\@institute}%
   \ifnum\c@@inst=1\relax%
   \else%
     \setcounter{footnote}{\c@@inst}%
     \setcounter{@inst}{1}%
-    \noindent$^{\the@inst}$\enspace%
+    \noindent\enspace%
   \fi%
   \ignorespaces%
   \@institute\par%
