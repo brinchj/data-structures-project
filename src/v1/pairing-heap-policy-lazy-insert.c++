@@ -50,7 +50,6 @@ namespace cphstl {
     /* Insert element */
     void insert(E **top, E **min, E* p) {
       // Precondition: Heap is not empty
-      // printf("insert: %p\n", p);
 
       // add to list
       p->list_add(&list_, &list_end_, NULL);
@@ -65,7 +64,6 @@ namespace cphstl {
 
     /* Increase value of element */
     void increase(E **top, E **min, E* p, V const& v) {
-      //printf("increase\n");
       p->value_ = v;
 
       // if p is top we're done
@@ -78,20 +76,7 @@ namespace cphstl {
       }
 
       // remove p from child-list
-      if(p->left_->child_ && p->left_->child_==p) {
-        // p is left-most child (left is parent)
-        p->left_->child_ = p->right_;
-        if(p->right_) {
-          p->right_->left_ = p->left_;
-        }
-      } else if (p->right_ == NULL) {
-        // p is right-most child
-        p->left_->right_ = NULL;
-      } else {
-        // p is somewhere inside child list
-        p->left_->right_ = p->right_;
-        p->right_->left_ = p->left_;
-      }
+      p->tree_cut(top);
 
       // reinsert p
       p->left_ = p->right_ = NULL;
@@ -109,7 +94,6 @@ namespace cphstl {
 
       int count = 0;
       while(node != NULL) {
-        //assert(node->left_ != NULL);
         assert(node->left_ == prev);
         if(undo) {
           assert(node->color_ >= 256);
@@ -134,7 +118,6 @@ namespace cphstl {
     E* extract(E **top, E **min, int size) {
       // Precondition: at least two elements in queue, size > 1
       // process waiting nodes
-      //printf("extract(min) called %p %p %p\n", *top, list_, (*top)->child_);
 
       bool min_from_list = ((*min)->color_ == 1);
       if(min_from_list) {
@@ -164,17 +147,11 @@ namespace cphstl {
       }
 
       if(list_ != NULL) {
-        //printf("meld with list\n");
         list_->color_ = 0;
         *top = (*top)->meld( list_ );
         assert((*top)->child_->left_ == *top);
         list_ = list_end_ = NULL;
       }
-
-      //printf("top: %p\n", *top);
-      //is_valid_tree(*top);
-      //printf("top: %p\n", *top);
-      //is_valid_tree(*top, true);
 
       // if minimum came from lazy list, just return it
       if(min_from_list) {
@@ -186,14 +163,12 @@ namespace cphstl {
       // pick top for extraction
       E* extracted_node = *top;
       assert(*min == *top);
-      //printf("> extracting node: %p (%lld)\n", *top, (*top)->element());
 
       // iterate through children
       if((*top)->child_ != NULL) {
         E* list = NULL;
         E* node = (*top)->child_;
         while(node != NULL && node->right_ != NULL) {
-          //printf("fix children: %p %p\n", node, node->right_);
           E* next = node->right_->right_;
           // meld with first in list
           E* right = node->right_;
@@ -231,18 +206,6 @@ namespace cphstl {
       *min = *top;
       assert(list_ == NULL && list_end_ == NULL);
 
-      //int count = is_valid_tree(*top);
-      //is_valid_tree(*top, true);
-      //printf("all is good: count is %i\n", count);
-
-      //printf("actually extracting: %p %i\n", extracted_node, extracted_node->value_);
-      extracted_node->left_ = extracted_node->right_ = NULL;
-      //printf("top is: %p %i\n", *top, (*top)->value_);
-
-      extracted_node->~E();
-
-      //printf("%p %p\n", (*top)->child_);
-
       return extracted_node;
     }
 
@@ -272,7 +235,7 @@ namespace cphstl {
 
 
     void meld(E **top, E **min, pairing_heap_framework<V,P,C,A,E> &other) {
-      //printf("meld()\n");
+      // stubbed
     }
 
 

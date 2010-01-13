@@ -39,8 +39,6 @@ namespace cphstl {
 
     // structors
 
-    //pairing_heap_framework(C const& = C(), A const& = A(),
-    //                       P const& = P());
     pairing_heap_framework(C const& c, A const& a, P const& p);
     pairing_heap_framework(C const& c, A const& a);
     pairing_heap_framework();
@@ -69,10 +67,12 @@ namespace cphstl {
     void meld(pairing_heap_framework&);
     void swap(pairing_heap_framework&);
 
+
     // is valid
     int is_valid_tree(E* root, bool undo);
     void is_valid();
 
+    // show
     int show();
     int show_tree(E* root, int level);
 

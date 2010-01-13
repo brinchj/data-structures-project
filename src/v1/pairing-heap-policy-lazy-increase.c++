@@ -72,7 +72,6 @@ public:
 
   /* Increase value of element */
   void increase(E **top, E **min, E* p, V const& v) {
-    //printf("INCR: %i -> %i\n", p->element().value, v.value);
     p->value_ = v;
 
     // update minimum
@@ -104,7 +103,6 @@ public:
 
     int count = 0;
     while(node != NULL) {
-      //assert(node->left_ != NULL);
       assert(node->left_ == prev);
       if(undo) {
         assert(node->color_ >= 256);
@@ -171,7 +169,6 @@ public:
 
     // merge element in list
     if(list != NULL) {
-      //printf("color: %i\n", list->color_);
       *top = list;
       node = list->right_;
       while(node != NULL) {
@@ -184,9 +181,6 @@ public:
       *top = NULL;
     }
 
-    //is_valid_tree(*top);
-    //is_valid_tree(*top, true);
-
     *min = *top;
     assert((*top)->color_ == 0);
 
@@ -195,11 +189,9 @@ public:
 
 
   E* extract(E **top, E **min, E *p) {
-    //printf("extract(%p) called\n", p);
 
     if(p->color_ == 1) {
       // cut p from list
-      //printf("EXTRACT: cut p\n");
       list_.erase(p->node_in_list_);
       p->color_ = 0;
     }
@@ -221,7 +213,6 @@ public:
 
 
   void cleanup(E **top, E **min, int size) {
-    //printf("CLEANUP\n");
     // size of list to sort
     const size_t logN = ceil(log(size));
 
@@ -242,7 +233,6 @@ public:
 
       // cut out left child
       if(p->child_ != NULL) {
-        //printf("has left child\n");
         E* myleft = p->child_;
         p->child_ = myleft->right_;
         if(p->child_) {
@@ -258,13 +248,10 @@ public:
         sort_list.sort(*ncmp);
         list_node<E*> *mynode;
         E* tree = sort_list.begin()->content();
-        //printf("GROUP:\n");
-        //printf("%i\n", tree->value_);
         sort_list.erase(sort_list.begin());
         while(sort_list.size() > 0) {
           mynode = sort_list.begin();
           tree = (mynode->content())->meld(tree, true);
-          //printf("%i\n", mynode->content()->value_);
           sort_list.erase(mynode);
         }
         *top = (*top)->meld( tree );
@@ -274,13 +261,10 @@ public:
       sort_list.sort(*ncmp);
       list_node<E*> *mynode;
       E* tree = sort_list.begin()->content();
-      //printf("GROUP:\n");
-      //printf("%i\n", tree->value_);
       sort_list.erase(sort_list.begin());
       while( sort_list.size() ) {
         mynode = sort_list.begin();
         tree = (mynode->content())->meld(tree, true);
-        //printf("%i\n", mynode->content()->value_);
         sort_list.erase(mynode);
       }
       *top = (*top)->meld( tree );

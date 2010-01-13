@@ -1,8 +1,3 @@
-/*
-  A heap node used as a base for various specialized heap nodes
-
-  Authors: Asger Bruun, Jyrki Katajainen © 2009
-*/
 
 #ifndef __CPHSTL_PAIRING_HEAP_NODE__
 #define __CPHSTL_PAIRING_HEAP_NODE__
@@ -68,9 +63,6 @@ namespace cphstl {
     }
 
     ~pairing_heap_node() {
-      left_ = right_ = child_ = NULL;
-      node_in_list_ = NULL;
-      //printf(">> destroying %p\n", this);
     }
 
 
@@ -138,15 +130,18 @@ namespace cphstl {
 
     void list_add(self_t **list, self_t **list_end, size_t *list_size) {
       if((*list) == NULL) {
+        // empty list
         *list = *list_end = this;
         this->left_ = this->right_ = NULL;
       } else {
+        // insert last
         (*list_end)->right_ = this;
         this->left_  = *list_end;
         this->right_ = NULL;
         *list_end = this;
       }
       if(list_size != NULL) {
+        // update size
         (*list_size) += 1;
       }
     }

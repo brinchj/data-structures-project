@@ -92,7 +92,6 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   E* pairing_heap_framework<V, P, C, A, E>::top() const {
-    //printf("MIN: %p\n", min_);
     return min_;
   }
 
@@ -100,7 +99,6 @@ namespace cphstl {
             typename E>
   void pairing_heap_framework<V, P, C, A, E>::insert(E* p) {
     assert(p != NULL);
-    //printf("INSERT: %i, count: %i\n", p->value_, size_);
     // heap is empty
     if(top_ == NULL) {
       min_ = top_ = p;
@@ -109,44 +107,35 @@ namespace cphstl {
       policy_.insert(&top_, &min_, p);
       size_ += 1;
     }
-    //IS_VALID();
+    IS_VALID();
   }
 
   template <typename V, typename P, typename C, typename A,
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
-    //printf("INCREASE\n");
     assert(p != NULL);
-    //assert(comparator_(p->element(), v));
     policy_.increase(&top_, &min_, p, v);
-    //IS_VALID();
+    IS_VALID();
   }
 
   template <typename V, typename P, typename C, typename A,
             typename E>
   E*
   pairing_heap_framework<V, P, C, A, E>::extract() {
-    //printf("PRE-EXTRACT\n");
     IS_VALID();
-    //printf("EXTRACT: %i, %i, %i\n", top_->value_, min_->value_, size_);
     if(size_ == 0) {
       return NULL;
     } else if (size_ == 1 && top_ != NULL) {
       size_ = 0;
       E* elem = top_;
       min_ = top_ = NULL;
-      //printf("POST-EXTRACT\n");
       IS_VALID();
       return elem;
     }
     E* elem = policy_.extract(&top_, &min_, size_);
-    //assert(elem->value_ >= top_->value_);
     size_ -= 1;
-    //printf("POST-EXTRACT\n");
     IS_VALID();
-    //printf("ALL IS REALLY GOOD; returned %p\n", elem);
-    //printf("Dearest top is %p\n", top_);
     return elem;
   }
 
@@ -158,7 +147,6 @@ namespace cphstl {
     if(p == min_) {
       return extract();
     }
-    //printf("EXTRACT(%p)\n", p);
     E* node = policy_.extract(&top_, &min_, p);
     size_ -= 1;
     IS_VALID();
@@ -175,11 +163,8 @@ namespace cphstl {
 
     int count = 0;
     while(node != NULL) {
-      //printf("validating node: %i >= %i\n", root->value_, node->value_);
-
-      //assert(node->left_ != NULL);
       if(node->left_ != prev) {
-        printf("fucked up: %p", node);
+        printf("broken node: %p", node);
       }
       assert(node->left_ == prev);
       if(undo) {
@@ -189,7 +174,6 @@ namespace cphstl {
         assert(node->color_ < 256);
         node->color_ |= 256;
       }
-      //assert(root->value_ >= node->value_);
       count += 1 + is_valid_tree(node, undo);
 
       prev = node;
@@ -203,10 +187,9 @@ namespace cphstl {
   void
   pairing_heap_framework<V, P, C, A, E>::is_valid() {
     int count = show();
-    //printf("count is: %i == %i\n", count, size_);
-    /*
-    size_type count = policy_.is_valid();
-    //printf("policy count=%i\n", count);
+    printf("count is: %i == %i\n", count, size_);
+    count = policy_.is_valid();
+    printf("policy count=%i\n", count);
 
     if(top_ != NULL) {
       assert(top_->left_ == NULL && top_->right_ == NULL);
@@ -214,9 +197,8 @@ namespace cphstl {
       is_valid_tree(top_, true);
     }
 
-    //printf("count=%i, size=%i\n", count, size_);
+    printf("count=%i, size=%i\n", count, size_);
     assert(size_ == count);
-    */
   }
 
 

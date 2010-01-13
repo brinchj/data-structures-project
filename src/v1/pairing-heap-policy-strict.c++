@@ -49,7 +49,6 @@ namespace cphstl {
 
     /* Increase value of element */
     void increase(E **top, E **min, E* p, V const& v) {
-      //printf("INCR: %i -> %i\n", p->element().value, v.value);
       p->value_ = v;
 
       // if p is top we're done
@@ -58,21 +57,8 @@ namespace cphstl {
         return;
       }
 
-      // remove p from child-list
-      if(p->left_->child_ && p->left_->child_==p) {
-        // p is left-most child (left is parent)
-        p->left_->child_ = p->right_;
-        if(p->right_) {
-          p->right_->left_ = p->left_;
-        }
-      } else if (p->right_ == NULL) {
-        // p is right-most child
-        p->left_->right_ = NULL;
-      } else {
-        // p is somewhere inside child list
-        p->left_->right_ = p->right_;
-        p->right_->left_ = p->left_;
-      }
+      // cut p from tree
+      p->tree_cut(top);
 
       // reinsert p
       p->left_ = p->right_ = NULL;
@@ -140,6 +126,7 @@ namespace cphstl {
 
     void meld(E **top, E **min,
               pairing_heap_framework<V,P,C,A,E>& other) {
+      // stubbed
     }
 
     int is_valid() {
