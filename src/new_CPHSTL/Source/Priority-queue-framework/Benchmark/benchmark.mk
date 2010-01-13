@@ -1,6 +1,6 @@
 CXXFLAGS = -DNDEBUG -Wall -std=c++0x -pedantic -x c++ -O3 -g
-CPHSTLSRC = $(HOME)/diku/data/src/new_CPHSTL/
-IFLAGS = -I $(CPHSTLSRC)/Source/Assert/Code -I $(CPHSTLSRC)/Source/Meldable-priority-queue/Code -I ../Code -I $(CPHSTLSRC)/Source/Priority-queue-framework/Code -I $(CPHSTLSRC)/Source/Iterator/Code -I $(CPHSTLSRC)/Source/Type/Code -I $(HOME)/diku/data/src/v1 -I$(CPHSTLSRC)/Source/List/Code -I .
+CPHSTLSRC = $(HOME)/projects/datastructures/CPHSTL/
+IFLAGS = -I $(CPHSTLSRC)/Source/Assert/Code -I $(CPHSTLSRC)/Source/Meldable-priority-queue/Code -I ../Code -I $(CPHSTLSRC)/Source/Priority-queue-framework/Code -I $(CPHSTLSRC)/Source/Iterator/Code -I $(CPHSTLSRC)/Source/Type/Code -I $(HOME)/projects/datastructures/data-structures-project/src/v1 -I$(CPHSTLSRC)/Source/List/Code -I .
 CXX = g++
 
 implementation-files:= $(wildcard *.i++)
@@ -11,15 +11,23 @@ push-time-tests:= $(addsuffix .push, $(time-tests))
 push-comp-tests:= $(addsuffix .push, $(comp-tests)) 
 increase-time-tests:= $(addsuffix .increase, $(time-tests)) 
 increase-comp-tests:= $(addsuffix .increase, $(comp-tests)) 
+increase2-time-tests:= $(addsuffix .increase2, $(time-tests)) 
+increase2-comp-tests:= $(addsuffix .increase2, $(comp-tests)) 
+increase3-time-tests:= $(addsuffix .increase3, $(time-tests)) 
+increase3-comp-tests:= $(addsuffix .increase3, $(comp-tests)) 
 erase-comp-tests:= $(addsuffix .erase, $(comp-tests)) 
 erase-time-tests:= $(addsuffix .erase, $(time-tests)) 
 pop-time-tests:= $(addsuffix .pop, $(time-tests)) 
 pop-comp-tests:= $(addsuffix .pop, $(comp-tests)) 
+pqsort-comp-tests:= $(addsuffix .pqsort, $(comp-tests)) 
+pqsort-time-tests:= $(addsuffix .pqsort, $(time-tests)) 
 
 $(time-tests): %.time: %.i++ 
 	@cp $*.i++ data-structure.i++
 	@make -s $*.time.push
 	@make -s $*.time.increase
+	@make -s $*.time.increase2
+	@make -s $*.time.increase3
 	@make -s $*.time.erase
 	@make -s $*.time.pop
 	@rm data-structure.i++
@@ -28,16 +36,34 @@ $(comp-tests): %.comp: %.i++
 	@cp $*.i++ data-structure.i++
 	@make -s $*.comp.push
 	@make -s $*.comp.increase
+	@make -s $*.comp.increase2
+	@make -s $*.comp.increase3
 	@make -s $*.comp.erase
 	@make -s $*.comp.pop
 	@rm data-structure.i++
 
-list = 100 # 100000 # 500000
+list = 10000 100000 500000
 
 $(push-time-tests): %.time.push : %.i++
 	@echo $* "time per push" 
 	@for x in $(list) ; do \
 	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) push-time.c++;\
+	  ./a.out; \
+	  rm -f ./a.out ; \
+	done
+
+$(increase2-time-tests): %.time.increase2 : %.i++
+	@echo $* "time per increase2" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) increase2-time.c++;\
+	  ./a.out; \
+	  rm -f ./a.out ; \
+	done
+
+$(increase3-time-tests): %.time.increase3 : %.i++
+	@echo $* "time per increase3" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) increase3-time.c++;\
 	  ./a.out; \
 	  rm -f ./a.out ; \
 	done
@@ -82,6 +108,22 @@ $(increase-comp-tests): %.comp.increase : %.i++
 	  rm -f ./a.out ; \
 	done
 
+$(increase2-comp-tests): %.comp.increase2 : %.i++
+	@echo $* "#comp per increase2" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) increase2-comp.c++;\
+	  ./a.out; \
+	  rm -f ./a.out ; \
+	done
+
+$(increase3-comp-tests): %.comp.increase3 : %.i++
+	@echo $* "#comp per increase3" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) increase3-comp.c++;\
+	  ./a.out; \
+	  rm -f ./a.out ; \
+	done
+
 $(erase-comp-tests): %.comp.erase : %.i++
 	@echo $* "#comp per erase" 
 	@for x in $(list) ; do \
@@ -94,6 +136,20 @@ $(pop-comp-tests): %.comp.pop : %.i++
 	@echo $* "#comp per pop" 
 	@for x in $(list) ; do \
 	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) pop-comp.c++;\
+	  ./a.out; \
+	done
+
+$(pqsort-comp-tests): %.comp.pqsort : %.i++
+	@echo $* "#comp per element" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) pqsort-comp.c++;\
+	  ./a.out; \
+	done
+
+$(pqsort-time-tests): %.time.pqsort : %.i++
+	@echo $* "#time per element" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) pqsort-time.c++;\
 	  ./a.out; \
 	done
 
