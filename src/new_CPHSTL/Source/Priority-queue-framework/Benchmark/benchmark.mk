@@ -1,6 +1,7 @@
 CXXFLAGS = -DNDEBUG -Wall -std=c++0x -pedantic -x c++ -O3 -g
-CPHSTLSRC = $(HOME)/projects/datastructures/CPHSTL/
-IFLAGS = -I $(CPHSTLSRC)/Source/Assert/Code -I $(CPHSTLSRC)/Source/Meldable-priority-queue/Code -I ../Code -I $(CPHSTLSRC)/Source/Priority-queue-framework/Code -I $(CPHSTLSRC)/Source/Iterator/Code -I $(CPHSTLSRC)/Source/Type/Code -I $(HOME)/projects/datastructures/data-structures-project/src/v1 -I$(CPHSTLSRC)/Source/List/Code -I .
+CPHSTLSRC = ../../
+V1SRC=${CPHSTLSRC}/../../v1
+IFLAGS = -I $(CPHSTLSRC)/Assert/Code -I $(CPHSTLSRC)/Meldable-priority-queue/Code -I ../Code -I $(CPHSTLSRC)/Priority-queue-framework/Code -I $(CPHSTLSRC)/Iterator/Code -I $(CPHSTLSRC)/Type/Code -I ${V1SRC} -I$(CPHSTLSRC)/List/Code -I .
 CXX = g++
 
 implementation-files:= $(wildcard *.i++)
