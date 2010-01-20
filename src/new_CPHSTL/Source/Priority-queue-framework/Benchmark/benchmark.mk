@@ -21,6 +21,8 @@ pop-time-tests:= $(addsuffix .pop, $(time-tests))
 pop-comp-tests:= $(addsuffix .pop, $(comp-tests)) 
 pqsort-comp-tests:= $(addsuffix .pqsort, $(comp-tests)) 
 pqsort-time-tests:= $(addsuffix .pqsort, $(time-tests)) 
+dijkstra-comp-tests:= $(addsuffix .dijkstra, $(comp-tests))
+dijkstra-time-tests:= $(addsuffix .dijkstra, $(time-tests))
 
 $(time-tests): %.time: %.i++ 
 	@cp $*.i++ data-structure.i++
@@ -42,7 +44,7 @@ $(comp-tests): %.comp: %.i++
 	@make -s $*.comp.pop
 	@rm data-structure.i++
 
-list = 10000 100000 500000
+list = 10000 #100000 500000
 
 $(push-time-tests): %.time.push : %.i++
 	@echo $* "time per push" 
@@ -65,6 +67,14 @@ $(increase3-time-tests): %.time.increase3 : %.i++
 	@for x in $(list) ; do \
 	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) increase3-time.c++;\
 	  ./a.out; \
+	  rm -f ./a.out ; \
+	done
+
+$(dijkstra-time-tests): %.time.dijkstra : %.i++
+	@echo $* "time per dijkstra ;-)" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) dijkstra-time.c++ && \
+	  ./a.out && \
 	  rm -f ./a.out ; \
 	done
 
@@ -120,6 +130,14 @@ $(increase3-comp-tests): %.comp.increase3 : %.i++
 	@echo $* "#comp per increase3" 
 	@for x in $(list) ; do \
 	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) increase3-comp.c++;\
+	  ./a.out; \
+	  rm -f ./a.out ; \
+	done
+
+$(dijkstra-comp-tests): %.comp.dijkstra : %.i++
+	@echo $* "#comp per dijkstra ;-)" 
+	@for x in $(list) ; do \
+	  $(CXX) $(CXXFLAGS) -DNUMBER=$$x $(IFLAGS) dijkstra-comp.c++;\
 	  ./a.out; \
 	  rm -f ./a.out ; \
 	done

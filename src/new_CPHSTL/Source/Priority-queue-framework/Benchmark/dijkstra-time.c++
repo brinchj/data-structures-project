@@ -5,7 +5,9 @@
 #include <vector>
 #include <list>
 #include <stdio.h>
+#include <ctime>
 
+#include "pennant-node.h++"
 #include "stl-meldable-priority-queue.h++"
 
 #include "pairing-heap-framework.h++"
@@ -18,15 +20,6 @@ using namespace cphstl;
 #define _V Vertex*
 #define _A std::allocator<_V>
 #define _E heap_node<_V, _A>
-
-//class vertex_comparator {
-//public:
-//  
-//  bool operator()(T const& a, T const& b) const {
-//    ++comps;
-//    return a < b;
-//  }
-//}
 
 class Vertex;
 
@@ -102,8 +95,12 @@ class Vertex { // {{{
 
 		inline bool
 		operator<(const Vertex& __v) const {
-			// XXX: It's a max heap so this was the fastest way to "fix" it ;-)
 			return dist < __v.dist;
+		}
+		
+		inline bool
+		operator>(const Vertex& __v) const {
+			return dist > __v.dist;
 		}
 	private:
 		int dist;
@@ -114,15 +111,27 @@ class Vertex { // {{{
 		std::vector<Edge*> adjacent_edges;
 }; // }}}
 
+class vertex_comparator {
+public:
+  
+  bool operator()(Vertex *a, Vertex *b) const {
+    //++comps;
+    return (*a) > (*b);
+  }
+};
+
 typedef Vertex* V;
-typedef std::greater<V> C;
+typedef vertex_comparator C;
 typedef std::allocator<V> A;
+#if 1
 typedef cphstl::pairing_heap_node<V, A, C> E;
 typedef cphstl::pairing_heap_policy_strict<V, C, A, E> POL;
 typedef cphstl::pairing_heap_framework<V, POL, C, A, E> PQ;
 typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;
+#endif
 #if 0
-typedef cphstl::meldable_priority_queue<V, C> Q;
+typedef cphstl::pennant_node<V, A> N;
+typedef cphstl::meldable_priority_queue<V, C, A, N> Q;
 #endif
 
 std::vector<Q::iterator> vertex_list;
@@ -155,9 +164,12 @@ int main() {
 	std::string str;
 	int linenum = 0;
 	int vertices, edges;
+	double running_time;
+	std::clock_t start, stop;
 
+    start = std::clock();
 	// Read dijkstra.dat {{{
-	in.open("dijkstra.dat");
+	in.open("1mgraph.dat");
 	if(!in) {
 		printf("Error: cannot open dijkstra.dat\n");
 		return 1;
@@ -166,6 +178,7 @@ int main() {
 	Q q;
 
 	getline(in,str);
+	int edgeNum = 0;
 	while(in) {
 		if(str[0] == '#')  {
 			getline(in,str);
@@ -189,29 +202,51 @@ int main() {
 				first = false;
 				vertId++;
 			}
+			printf("Added %d vertices\n", vertId);
 		} else {
 			std::string buf;
+			int vId;
 			Vertex *a, *b;
 			int w;
-			ss >> buf;
-			a = get_vertex(buf);
-			ss >> buf;
-			b = get_vertex(buf);
+			//ss >> buf;
+			//a = get_vertex(buf);
+			ss >> vId;
+			a = *vertex_list.at(vId);
+			if(NULL == a) {
+				printf("Couldn't find vertex %s\n", buf.c_str());
+				return 1;
+			}
+			//ss >> buf;
+			//b = get_vertex(buf);
+			ss >> vId;
+			b = *vertex_list.at(vId);
+			if(NULL == b) {
+				printf("Couldn't find vertex %s\n", buf.c_str());
+				return 1;
+			}
 			ss >> w;
 			a->addEdge(new Edge(a, b, w));
+			if((edgeNum % 100000) == 0) {
+				//printf("Added edge %d\n", edgeNum);
+			}
+			edgeNum++;
 		}
 		linenum++;
 		getline(in,str);
 	}
-	printf("Read %d vertices and %d edges.\n", vertex_list.size(), edges);
 	// END reading dijkstra.dat   }}}
+    stop = std::clock();
+    running_time = double(stop - start)/double(CLOCKS_PER_SEC);
+	printf("Read %d vertices and %d edges in %f.\n", vertex_list.size(), edges, running_time);
 
+    start = std::clock();
+	// Run Dijkstra {{{
 	while(0 < q.size()) {
 		Q::iterator it = q.top();
 		Vertex *u = *it;
 		q.pop();
 		u->setExtracted(true);
-		printf("Popped vertex %s with index %d\n", u->getName().c_str(), u->getId());
+		//printf("Popped vertex %s with index %d\n", u->getName().c_str(), u->getId());
 
 		std::vector<Edge*> *edges = u->getEdges();
 		for(std::vector<Edge*>::iterator it = edges->begin(); it != edges->end(); ++it) {
@@ -220,19 +255,24 @@ int main() {
 			int alt = u->getDist() + e->getWeight();
 			if(alt < v->getDist()) {
 				// Relax edge
-				v->setDist(alt);
-				v->setPrev(u);
 				if(!v->isExtracted()) {
+					v->setDist(alt);
+					v->setPrev(u);
 					Q::iterator it = vertex_list.at(v->getId());
 					q.increase(it, v);
+					//printf("Relaxed edge from %s to %s to %d\n", u->getName().c_str(), v->getName().c_str(), v->getDist());
 				}
 			}
 		}
-	}
+	} // }}}
+    stop = std::clock();
+    running_time = double(stop - start)/double(CLOCKS_PER_SEC);
+	printf("Found single-source shortest paths in %f.\n", running_time);
 
 	printf("Size of pqueue: %d\n", q.size());
 	printf("Result path:\n");
 
+	return 0;
 	int idx = 0;
 	for(std::vector<Q::iterator>::iterator it = vertex_list.begin(); it != vertex_list.end(); ++it) {
 		Vertex *v = *(*it);
