@@ -12,6 +12,7 @@
 #include "pairing-heap-policy-strict.c++"
 #include "pairing-heap-policy-lazy-insert.c++"
 #include "pairing-heap-policy-lazy-increase.c++"
+#include "pairing-heap-policy-lazy-insert-increase.c++"
 
 long long comps = 0;
 
@@ -33,8 +34,9 @@ typedef std::allocator<_V> _A;
 typedef cphstl::pairing_heap_node<_V, _A, _C>  _E;
 
 //typedef cphstl::pairing_heap_policy_strict<_V, _C, _A, _E>  P;
-typedef cphstl::pairing_heap_policy_lazy_insert<_V, _C, _A, _E>  P;
+//typedef cphstl::pairing_heap_policy_lazy_insert<_V, _C, _A, _E>  P;
 //typedef cphstl::pairing_heap_policy_lazy_increase<_V, _C, _A, _E>  P;
+typedef cphstl::pairing_heap_policy_lazy_insert_increase<_V, _C, _A, _E>  P;
 typedef cphstl::pairing_heap_framework<_V, P, _C, _A, _E> PQ;
 
 typedef cphstl::meldable_priority_queue<_V, _C, _A, _E, PQ> MPQ;

@@ -168,27 +168,43 @@ namespace cphstl {
     }
 
 
-    void replace_with(self_t *other) {
+    void replace_with(self_t *other, bool child=false) {
       // insert other in this's place
-      if(this->left_->child_ && this->left_->child_==this) {
-        // this is left-most child (left is parent)
-        this->left_->child_ = other;
-        other->left_ = this->left_;
-        if(this->right_ != NULL) {
-          this->right_->left_ = other;
+      //other->color_ = color_;
+      //printf("REPLACE\n");
+      if(child) {
+        other->child_ = child_;
+        if(child_) {
+          child_->left_ = other;
         }
-        other->right_ = this->right_;
-      } else if (this->right_ == NULL) {
+      }
+
+      if(this->left_ == NULL) {
+        // this is top
+        //printf("this is top!\n");
+        other->left_ = other->right_ = NULL;
+      } else if (left_->child_ == this) {
+        // this is left-most child (left is parent)
+        //printf("this is left-most child!\n");
+        left_->child_ = other;
+        other->left_ = left_;
+        other->right_ = right_;
+        if(right_ != NULL) {
+          right_->left_ = other;
+        }
+      } else if (right_ == NULL) {
         // this is right-most child
-        this->left_->right_ = other;
-        other->left_ = this->left_;
+        //printf("this is right-most child\n");
+        left_->right_ = other;
+        other->left_ = left_;
         other->right_ = NULL;
       } else {
         // this is somewhere inside child list
-        this->left_->right_ = other;
-        this->right_->left_ = other;
-        other->left_ = this->left_;
-        other->right_ = this->right_;
+        //printf("this is mid-most child\n");
+        left_->right_ = other;
+        right_->left_ = other;
+        other->left_ = left_;
+        other->right_ = right_;
       }
     }
 
@@ -238,20 +254,11 @@ namespace cphstl {
     }
 
     void swap(self_t * other) {
-      self_t* left = other->left_;
-      self_t* right = other->right_;
-      self_t* child = other->child_;
-      int color = other->color_;
-      other->left_ = left_;
-      other->right_ = right_;
-      other->child_ = child_;
-      other->color_ = color_;
-      left_ = left;
-      right_ = right;
-      child_ = child;
-      color_ = color;
+      self_t *tmp = new self_t();
+      other->replace_with(tmp, true);
+      this->replace_with(other, true);
+      tmp->replace_with(this, true);
     }
-
   };
 }
 

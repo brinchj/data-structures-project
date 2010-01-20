@@ -11,6 +11,8 @@
 
 namespace cphstl {
 
+#ifndef NODE_COMPARE
+#define NODE_COMPARE
   template <
     typename V,
     typename C = std::less<V>,
@@ -26,6 +28,7 @@ namespace cphstl {
   protected:
     C comparator_;
   };
+#endif
 
 template <
   typename V,
@@ -66,7 +69,11 @@ public:
 
   /* Insert element */
   void insert(E **top, E **min, E* p) {
-    // Precondition: Heap is not empty
+    // heaps is empty
+    if(*top == NULL) {
+      *top = *min = p;
+      return;
+    }
     *min = *top = (*top)->meld( p );
   }
 

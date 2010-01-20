@@ -43,7 +43,11 @@ namespace cphstl {
 
     /* Insert element */
     void insert(E **top, E **min, E* p) {
-      // Precondition: Heap is not empty
+      // heap is empty
+      if(*top == NULL) {
+        *top = *min = p;
+        return;
+      }
       *min = *top = (*top)->meld( p );
     }
 
