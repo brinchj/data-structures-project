@@ -11,6 +11,8 @@
 
 namespace cphstl {
 
+#ifndef NODE_COMPARE
+#define NODE_COMPARE
   template <
     typename V,
     typename C = std::less<V>,
@@ -26,6 +28,7 @@ namespace cphstl {
   protected:
     C comparator_;
   };
+#endif
 
 template <
   typename V,
@@ -66,7 +69,11 @@ public:
 
   /* Insert element */
   void insert(E **top, E **min, E* p) {
-    // Precondition: Heap is not empty
+    // heaps is empty
+    if(*top == NULL) {
+      *top = *min = p;
+      return;
+    }
     *min = *top = (*top)->meld( p );
   }
 
@@ -217,8 +224,8 @@ public:
     const size_t logN = ceil(log(size));
 
     // comparator
-    node_compare<V,C,A,E>* ncmp = new node_compare<V,C,A,E>(comparator_);
-    doubly_linked_list<E*> sort_list;
+    node_compare<V,C,A,E>  *ncmp = new node_compare<V,C,A,E>(comparator_);
+    doubly_linked_list<E*> *sort_list = new doubly_linked_list<E*>();
 
     list_node<E*> *node;
     while(list_.size() > 0) {
@@ -243,34 +250,36 @@ public:
       } else {
         p->tree_cut(top);
       }
-      sort_list.push_front(p);
-      if(sort_list.size() == logN) {
-        sort_list.sort(*ncmp);
-        list_node<E*> *mynode;
-        E* tree = sort_list.begin()->content();
-        sort_list.erase(sort_list.begin());
-        while(sort_list.size() > 0) {
-          mynode = sort_list.begin();
-          tree = (mynode->content())->meld(tree, true);
-          sort_list.erase(mynode);
-        }
-        *top = (*top)->meld( tree );
+      sort_list->push_front(p);
+      if(sort_list->size() == logN) {
+        cleanup_sort(top, min, logN, sort_list, ncmp);
       }
     }
-    if(sort_list.size() > 0) {
-      sort_list.sort(*ncmp);
+    if(sort_list->size() > 0) {
+      cleanup_sort(top, min, sort_list->size(), sort_list, ncmp);
+    }
+  }
+
+
+  void cleanup_sort(E** top, E** min, int size,
+                             doubly_linked_list<E*>* list,
+                             node_compare<V,C,A,E>* cmp)
+  {
+    if(size > 0) {
+      list->sort(*cmp);
       list_node<E*> *mynode;
-      E* tree = sort_list.begin()->content();
-      sort_list.erase(sort_list.begin());
-      while( sort_list.size() ) {
-        mynode = sort_list.begin();
+      E* tree = list->begin()->content();
+      list->erase(list->begin());
+      while( list->size() ) {
+        mynode = list->begin();
         tree = (mynode->content())->meld(tree, true);
-        sort_list.erase(mynode);
+        list->erase(mynode);
       }
       *top = (*top)->meld( tree );
     }
     *min = *top;
   }
+
 
 
   void meld(E **top, E **min, pairing_heap_framework<V,P,C,A,E> &other) {

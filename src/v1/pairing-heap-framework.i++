@@ -98,15 +98,12 @@ namespace cphstl {
   template <typename V, typename P, typename C, typename A,
             typename E>
   void pairing_heap_framework<V, P, C, A, E>::insert(E* p) {
+    //printf("INSERT\n");
     assert(p != NULL);
     // heap is empty
-    if(top_ == NULL) {
-      min_ = top_ = p;
-      size_ = 1;
-    } else {
-      policy_.insert(&top_, &min_, p);
-      size_ += 1;
-    }
+    policy_.insert(&top_, &min_, p);
+    size_ += 1;
+    // check validity
     IS_VALID();
   }
 
@@ -114,6 +111,7 @@ namespace cphstl {
             typename E>
   void
   pairing_heap_framework<V, P, C, A, E>::increase(E* p, V const& v) {
+    //printf("INCREASE\n");
     assert(p != NULL);
     policy_.increase(&top_, &min_, p, v);
     IS_VALID();
@@ -123,6 +121,7 @@ namespace cphstl {
             typename E>
   E*
   pairing_heap_framework<V, P, C, A, E>::extract() {
+    //printf("EXTRACT-MIN\n");
     IS_VALID();
     if(size_ == 0) {
       return NULL;
@@ -147,6 +146,7 @@ namespace cphstl {
     if(p == min_) {
       return extract();
     }
+    //printf("EXTRACT\n");
     E* node = policy_.extract(&top_, &min_, p);
     size_ -= 1;
     IS_VALID();
@@ -164,7 +164,7 @@ namespace cphstl {
     int count = 0;
     while(node != NULL) {
       if(node->left_ != prev) {
-        printf("broken node: %p", node);
+        printf("broken node: %p", (void*) node);
       }
       assert(node->left_ == prev);
       if(undo) {
@@ -187,9 +187,9 @@ namespace cphstl {
   void
   pairing_heap_framework<V, P, C, A, E>::is_valid() {
     int count = show();
-    printf("count is: %i == %i\n", count, size_);
+    //printf("policy!!\n");
     count = policy_.is_valid();
-    printf("policy count=%i\n", count);
+    //printf("policy count=%i\n", count);
 
     if(top_ != NULL) {
       assert(top_->left_ == NULL && top_->right_ == NULL);
@@ -197,7 +197,7 @@ namespace cphstl {
       is_valid_tree(top_, true);
     }
 
-    printf("count=%i, size=%i\n", count, size_);
+    //printf("count=%i, size=%i\n", count, size_);
     assert(size_ == count);
   }
 
@@ -208,7 +208,7 @@ namespace cphstl {
   void
   pairing_heap_framework<V, P, C, A, E>::
   meld(pairing_heap_framework& other) {
-    printf("MELD\n");
+    //printf("MELD\n");
     policy_.meld(&top_, &min_, other);
     size_ += other.size_;
   }
@@ -233,10 +233,10 @@ namespace cphstl {
     int count = 0;
     E* node = root->child_;
     while(node != NULL) {
-      std::string str = "";
+      /*std::string str = "";
       str.insert(0, level*2, '+');
       std::cout << str;
-      printf("%i\n", node->value_);
+      printf("%i\n", node->value_);*/
       count += 1 + show_tree(node, level+1);
       node = node->right_;
     }
