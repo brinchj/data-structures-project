@@ -1,11 +1,24 @@
+#ifndef PAIRING_HEAP_POLICY_LAZY_INSERT
+#define PAIRING_HEAP_POLICY_LAZY_INSERT
+
+// includes
 #include <stdio.h>
 #include <vector>
-
 #include "pairing-heap-node.c++"
 
 
-#ifndef PAIRING_HEAP_POLICY_LAZY_INSERT
-#define PAIRING_HEAP_POLICY_LAZY_INSERT
+// bit-flags used for tagging
+#define NODE_IN_TREE          (1<<0)
+#define NODE_IN_INSERT_LIST   (1<<1)
+// used in debug validation
+#define NODE_CHECKED          (1<<8)
+
+// bit-flag macros
+#define FLAG_HAS(node, flag)     ((node)->color_  &  flag)
+#define FLAG_ADD(node, flag)     ((node)->color_ |=  flag)
+#define FLAG_REM(node, flag)     ((node)->color_ &= ~flag)
+
+
 
 namespace cphstl {
   template <
@@ -51,14 +64,15 @@ namespace cphstl {
     void insert(E **top, E **min, E* p) {
       // heap is empty
       if(*top == NULL) {
+        FLAG_ADD(p, NODE_IN_TREE);
         *top = *min = p;
         return;
       }
 
       // add to list
+      FLAG_ADD(p, NODE_IN_INSERT_LIST);
       p->list_add(&list_, &list_end_, NULL);
-      // set color
-      p->color_ = 1;
+
       // update minimum
       if(*min == NULL ||
          comparator_((*min)->element(), p->element())) {
@@ -71,7 +85,7 @@ namespace cphstl {
       p->value_ = v;
 
       // if p is top we're done
-      if(p == *top || p->color_ == 1) {
+      if(p == *top || FLAG_HAS(p, NODE_IN_INSERT_LIST)) {
         if(*min == NULL ||
            comparator_((*min)->element(), p->element())) {
           *min = p;
@@ -84,7 +98,7 @@ namespace cphstl {
 
       // reinsert p
       p->left_ = p->right_ = NULL;
-      insert(top, min, p);
+      *top = *min = (*top)->meld( p );
     }
 
 
@@ -100,13 +114,12 @@ namespace cphstl {
       while(node != NULL) {
         assert(node->left_ == prev);
         if(undo) {
-          assert(node->color_ >= 256);
-          node->color_ &= 255;
+          assert(FLAG_HAS(node, NODE_CHECKED));
+          FLAG_REM(node, NODE_CHECKED);
         } else {
-          assert(node->color_ < 256);
-          node->color_ |= 256;
+          assert( !FLAG_HAS(node, NODE_CHECKED) );
+          FLAG_ADD(node, NODE_CHECKED);
         }
-        assert(root->value_ >= node->value_);
 
         count += 1 + is_valid_tree(node, undo);
 
@@ -123,10 +136,11 @@ namespace cphstl {
       // Precondition: at least two elements in queue, size > 1
       // process waiting nodes
 
-      bool min_from_list = ((*min)->color_ == 1);
+      bool min_from_list = FLAG_HAS(*min, NODE_IN_INSERT_LIST);
       if(min_from_list) {
         // cut minimum from list
         (*min)->list_cut(&list_, &list_end_, NULL);
+        FLAG_REM(*min, NODE_IN_INSERT_LIST);
       }
 
       while(list_ != list_end_) {
@@ -140,7 +154,8 @@ namespace cphstl {
         assert(list_ != second);
 
         // update colors
-        first->color_ = second->color_ = 0;
+        FLAG_REM(first, NODE_IN_INSERT_LIST);
+        FLAG_REM(second, NODE_IN_INSERT_LIST);
 
         // meld first two nodes
         E* node = first->meld( second );
@@ -151,7 +166,7 @@ namespace cphstl {
       }
 
       if(list_ != NULL) {
-        list_->color_ = 0;
+        FLAG_REM(list_, NODE_IN_INSERT_LIST);
         *top = (*top)->meld( list_ );
         assert((*top)->child_->left_ == *top);
         list_ = list_end_ = NULL;
@@ -216,7 +231,7 @@ namespace cphstl {
     E* extract(E **top, E **min, E *p) {
       //printf("extract(%p) called\n", p);
 
-      if(p->color_ == 1) {
+      if(FLAG_HAS(p, NODE_IN_INSERT_LIST)) {
         // cut p from list
         p->list_cut(&list_, &list_end_, NULL);
         return p;
@@ -243,11 +258,16 @@ namespace cphstl {
     }
 
 
-    int is_valid_list(E* root, int c0, int c1) {
+    int is_valid_list(E* root, bool undo) {
       E* node = root;
       assert(node->left_ == NULL);
-      assert(node->color_ == c0);
-      node->color_ = c1;
+      if(undo) {
+        assert(FLAG_HAS(node, NODE_CHECKED));
+        FLAG_REM(node, NODE_CHECKED);
+      } else {
+        assert(!FLAG_HAS(node, NODE_CHECKED));
+        FLAG_ADD(node, NODE_CHECKED);
+      }
 
       size_type count = 1;
 
@@ -255,8 +275,13 @@ namespace cphstl {
       while(node != NULL) {
         assert(node->left_ != NULL);
         assert(node->left_->right_ == node);
-        assert(node->color_ == c0);
-        node->color_ = c1;
+        if(undo) {
+          assert(FLAG_HAS(node, NODE_CHECKED));
+          FLAG_REM(node, NODE_CHECKED);
+        } else {
+          assert(!FLAG_HAS(node, NODE_CHECKED));
+          FLAG_ADD(node, NODE_CHECKED);
+        }
         node = node->right_;
         count += 1;
       }
@@ -266,8 +291,8 @@ namespace cphstl {
     int is_valid() {
       if(list_ == NULL)
         return 0;
-      is_valid_list(list_, 1, 2);
-      return is_valid_list(list_, 2, 1);
+      is_valid_list(list_, false);
+      return is_valid_list(list_, true);
     }
 
 
