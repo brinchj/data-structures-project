@@ -6,22 +6,24 @@
 #include <list>
 #include <stdio.h>
 #include <ctime>
+#include "limits.h"
 
 #include "pennant-node.h++"
 #include "stl-meldable-priority-queue.h++"
 
 #include "pairing-heap-framework.h++"
 #include "pairing-heap-policy-strict.c++"
+#include "pairing-heap-policy-lazy-insert.c++"
+#include "pairing-heap-policy-lazy-increase.c++"
+#include "pairing-heap-policy-lazy-insert-increase.c++"
 
-
-#define INF 1024*1024*2
 
 using namespace cphstl;
-#define _V Vertex*
-#define _A std::allocator<_V>
-#define _E heap_node<_V, _A>
 
 class Vertex;
+
+int compCount;
+int incrCount;
 
 class Edge { // {{{
 	public:
@@ -48,7 +50,7 @@ class Edge { // {{{
 class Vertex { // {{{
 	public:
 		Vertex(int vertex_id, std::string vertex_name) : id(vertex_id), name(vertex_name) {
-			dist = INF;
+			dist = INT_MAX;
 			previous = NULL;
 			extracted = false;
 		}
@@ -115,7 +117,7 @@ class vertex_comparator {
 public:
   
   bool operator()(Vertex *a, Vertex *b) const {
-    //++comps;
+    ++compCount;
     return (*a) > (*b);
   }
 };
@@ -125,7 +127,9 @@ typedef vertex_comparator C;
 typedef std::allocator<V> A;
 #if 1
 typedef cphstl::pairing_heap_node<V, A, C> E;
-typedef cphstl::pairing_heap_policy_strict<V, C, A, E> POL;
+//typedef cphstl::pairing_heap_policy_strict<V, C, A, E> POL;
+//typedef cphstl::pairing_heap_policy_lazy_insert<V, C, A, E> POL;
+typedef cphstl::pairing_heap_policy_lazy_increase<V, C, A, E> POL;
 typedef cphstl::pairing_heap_framework<V, POL, C, A, E> PQ;
 typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;
 #endif
@@ -133,6 +137,8 @@ typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;
 typedef cphstl::pennant_node<V, A> N;
 typedef cphstl::meldable_priority_queue<V, C, A, N> Q;
 #endif
+
+#define GRAPHFILE "20graph.dat"
 
 std::vector<Q::iterator> vertex_list;
 
@@ -167,11 +173,13 @@ int main() {
 	double running_time;
 	std::clock_t start, stop;
 
+	incrCount = compCount = 0;
+
     start = std::clock();
-	// Read dijkstra.dat {{{
-	in.open("1mgraph.dat");
+	// Read graph data from file {{{
+	in.open(GRAPHFILE);
 	if(!in) {
-		printf("Error: cannot open dijkstra.dat\n");
+		printf("Error: cannot open %s\n", GRAPHFILE);
 		return 1;
 	}
 
@@ -237,9 +245,10 @@ int main() {
 	// END reading dijkstra.dat   }}}
     stop = std::clock();
     running_time = double(stop - start)/double(CLOCKS_PER_SEC);
-	printf("Read %d vertices and %d edges in %f.\n", vertex_list.size(), edges, running_time);
+	printf("Read %d vertices and %d edges in %f from %s.\n", vertex_list.size(), edges, running_time, GRAPHFILE);
 
     start = std::clock();
+	int iter = 0;
 	// Run Dijkstra {{{
 	while(0 < q.size()) {
 		Q::iterator it = q.top();
@@ -260,14 +269,17 @@ int main() {
 					v->setPrev(u);
 					Q::iterator it = vertex_list.at(v->getId());
 					q.increase(it, v);
+					++incrCount;
 					//printf("Relaxed edge from %s to %s to %d\n", u->getName().c_str(), v->getName().c_str(), v->getDist());
 				}
 			}
 		}
+		iter++;
 	} // }}}
     stop = std::clock();
     running_time = double(stop - start)/double(CLOCKS_PER_SEC);
 	printf("Found single-source shortest paths in %f.\n", running_time);
+	printf("Used %d comparisons, %d increase ops and %d extract ops.\n", compCount, incrCount, vertex_list.size());
 
 	printf("Size of pqueue: %d\n", q.size());
 	printf("Result path:\n");
