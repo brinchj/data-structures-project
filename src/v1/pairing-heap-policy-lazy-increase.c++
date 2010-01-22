@@ -149,12 +149,13 @@ public:
 
     if(extracted_node != NULL) {
       (*top)->swap(extracted_node);
+      *top = extracted_node;
     } else {
       extracted_node = *top;
     }
-    E* list = NULL;
 
     // iterate through children
+    E* list = NULL;
     E* node = (*top)->child_;
     while(node != NULL && node->right_ != NULL) {
       E* next = node->right_->right_;
