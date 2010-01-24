@@ -129,7 +129,8 @@ typedef std::allocator<V> A;
 typedef cphstl::pairing_heap_node<V, A, C> E;
 //typedef cphstl::pairing_heap_policy_strict<V, C, A, E> POL;
 //typedef cphstl::pairing_heap_policy_lazy_insert<V, C, A, E> POL;
-typedef cphstl::pairing_heap_policy_lazy_increase<V, C, A, E> POL;
+//typedef cphstl::pairing_heap_policy_lazy_increase<V, C, A, E> POL;
+typedef cphstl::pairing_heap_policy_lazy_insert_increase<V, C, A, E> POL;
 typedef cphstl::pairing_heap_framework<V, POL, C, A, E> PQ;
 typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;
 #endif
@@ -138,7 +139,7 @@ typedef cphstl::pennant_node<V, A> N;
 typedef cphstl::meldable_priority_queue<V, C, A, N> Q;
 #endif
 
-#define GRAPHFILE "20graph.dat"
+#define GRAPHFILE "100k-10m.dat"
 
 std::vector<Q::iterator> vertex_list;
 
