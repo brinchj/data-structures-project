@@ -68,25 +68,85 @@ operation ``charges'' or credits the data structure.
 \item Potential method: Pick a function $\Phi(D)$ that maps the configuration of
 $D$ to a a real number, called the potential of $D$.
 
-\begin{enumerate}
-\item $\Phi_i \geq \Phi_0$ for all $i \in {1,\ldots,n}$.
-\item $t_i \leq k (c_i - \Delta_i)$ where $\Delta_i = \Phi_i - \Phi_{i-1}$, $k$
-constant
-\end{enumerate}
+	\begin{enumerate}
+	\item $\Phi_i \geq \Phi_0$ for all $i \in {1,\ldots,n}$.
+	\item $t_i \leq k (c_i - \Delta_i)$ where $\Delta_i = \Phi_i - \Phi_{i-1}$, $k$
+	constant
+	\end{enumerate}
 \end{enumerate}
 
 \section{Number systems}
 
+\begin{itemize}
+\item Incrementing binary numbers
+\item Skew binary numbers (decrement in $O(1)$ time due to redundant 2)
+\item Analytical ties to other data structures
+\end{itemize}
+
 \section{Fibonacci heaps}
+
+Amortized running times:
+
+\begin{description}
+\item[Insert] $\Theta(1)$ (also actual cost): Insert as root node.
+
+\item[Find-min] $\Theta(1)$: Return minimum element from pointer.
+
+\item[Extract-Min] $O(\log n)$: Add children to root list, then consolidate into
+binomial trees.
+
+\item[Union] $\Theta(1)$: Append root nodes.
+
+\item[Decrease-Key] $\Theta(1)$: Mark parent, cut node and make it a root. If
+parent just lost its second child cut it and make it a root.
+
+\item[Delete] $O(\log n)$: Run decrease-key then extract-min.
+\end{description}
+
+Potential function: $\Phi(H) = t(H) + 2m(H)$
+
+Maximum degree $D(n) = O(\log n)$. Proof by induction using the Fibonacci
+sequence.
 
 \section{van Emde Boas Trees}
 
-\section{Hash tables}
+\begin{itemize}
+\item Recursive Structure
+\item Numbers in universe $u$
+\item $O(\log \log u)$ running time for all operations: Minimum, Maximum, Successor,
+Predecessor, Insert, Delete, Lookup.
+\item Space requirement: $P(u) = O(u)$
+\end{itemize}
+
+\section{Hashtables}
+
+Support operations: Insert, Search, Delete.
+
+\begin{description}
+\item[Hash function] $h$ maps elements to slot numbers: $h : U \rightarrow {0,1,\ldots,m-1}$
+\item[Collisions] resolved by chaining. Avg case time $\Theta(1 + \alpha$ where
+$\alpha$ is the table load factor.
+\item[Universal Hashing] randomly chosen hash function independently of keys to
+avoid worst-case behavior. Expected $\Theta(n)$ time for any sequence of $n$
+operations.
+\item[Perfect hashing] 
+\end{description}
 
 \section{External-memory data structures}
 
+B-trees.
+
 \begin{itemize}
-\item B-trees
+\item Properties: $n$ keys in each node $x$ stored in ascending order. Each
+internal node has $n+1$ pointers to its children. Keys separate ranges stored in
+each subtree. All leaves have same depth = height of the B-tree $h$. 
+\item Minimum degree $t \geq 2$ - every node must have at least $t - 1$ keys and
+at least $t$ children, and at most $2t - 1$ keys and $2t$ children.
+\item Height of B-tree: $h \leq \log_t \frac{n+1}{2}$
+\item Searching: Analogue to binary search tree, disk accesses = $O(h) =O(\log_t n)$
+\item Insert: Traverse the tree, split full nodes as necessary and insert in
+nonempty leaf node with $O(h)$ disk accesses.
+\item Deletion: $O(h)$
 \end{itemize}
 
 \section{Self-adjusting data structures}
@@ -94,6 +154,12 @@ constant
 \begin{itemize}
 \item Search trees (splay trees)
 \item Also: Pairing heaps :-)
+\item Potential function
+\begin{enumerate}
+\item $s(x)$ size of a node = the number of nodes in its subtree including itself
+\item $r(x)$ rank of a node = $\log s(x)$
+\item $\Phi(D) = \sum^n_{i=0} r(n_i)$
+\end{enumerate}
 \end{itemize}
 
 \end{document}
