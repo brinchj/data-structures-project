@@ -1,0 +1,99 @@
+%% Latex lort {{{1
+\documentclass[a4paper,11pt,fleqn]{article}
+
+\usepackage{a4wide}
+\usepackage[danish]{babel}
+\usepackage{t1enc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{times}
+\usepackage{theorem}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{lscape}
+\usepackage{clrscode}
+\title{Data Structures Exam Notes}
+\author{Asser Schrøder Femø}
+
+\begin{document}
+\maketitle
+%% }}}1
+
+\section{Selection}
+
+\begin{itemize}
+\item Order statistic: $k$th order statistic = $k$th largest element out of $n$
+elements
+
+\item Selection problem: Report the $k$th largest element (ie. $k$th order
+statistic)
+
+\item Trivial solution: Sort ($\Theta(n \lg n)$) then select
+
+\item Randomized select: Quicksort but only recurse on half the set. Expected
+(due to randomization) running time $O(n)$, worst case $\Theta(n^2)$
+
+\item Selection by sieving: 
+\begin{enumerate}
+\item Divide into groups of 5 elements - $O(n)$
+\item Find median on each group by insertion sort - $O(n)$
+\item Recursively find median of each group - $T(3n/10)$
+\item Partition around median-of-medians - $O(n)$
+\item Recursively find the $i$th smallest element on the relevant side - $T(7n/10 + 6)$
+\end{enumerate}
+
+Recurrence: 
+
+\begin{displaymath}
+T(n) = \left\{ \begin{array}{ll}
+ O(1) & \textrm{if $n<140$}\\
+  T(\lceil n/5 \rceil) + T(7n/10 + 6) + O(n) & \textrm{if $n \geq 140$}
+     \end{array} \right.
+\end{displaymath}
+
+Solution: $T(n) = O(n)$
+
+\end{itemize}
+
+\section{Amortized analysis}
+
+\begin{enumerate}
+\item Aggregate analysis: When a sequence of $n$ operations take $T(n)$ time then the
+amortized cost per operation is $T(n)/n$
+
+\item Accounting method: Assign \emph{charges} to different operations. Each
+operation ``charges'' or credits the data structure.
+
+\item Potential method: Pick a function $\Phi(D)$ that maps the configuration of
+$D$ to a a real number, called the potential of $D$.
+
+\begin{enumerate}
+\item $\Phi_i \geq \Phi_0$ for all $i \in {1,\ldots,n}$.
+\item $t_i \leq k (c_i - \Delta_i)$ where $\Delta_i = \Phi_i - \Phi_{i-1}$, $k$
+constant
+\end{enumerate}
+\end{enumerate}
+
+\section{Number systems}
+
+\section{Fibonacci heaps}
+
+\section{van Emde Boas Trees}
+
+\section{Hash tables}
+
+\section{External-memory data structures}
+
+\begin{itemize}
+\item B-trees
+\end{itemize}
+
+\section{Self-adjusting data structures}
+
+\begin{itemize}
+\item Search trees (splay trees)
+\item Also: Pairing heaps :-)
+\end{itemize}
+
+\end{document}

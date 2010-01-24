@@ -138,7 +138,7 @@ typedef cphstl::pennant_node<V, A> N;
 typedef cphstl::meldable_priority_queue<V, C, A, N> Q;
 #endif
 
-#define GRAPHFILE "20graph.dat"
+#define GRAPHFILE "100k-10m.dat"
 
 std::vector<Q::iterator> vertex_list;
 
