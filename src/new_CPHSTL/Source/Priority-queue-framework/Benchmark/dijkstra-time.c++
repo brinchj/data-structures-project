@@ -128,8 +128,8 @@ typedef std::allocator<V> A;
 #if 1
 typedef cphstl::pairing_heap_node<V, A, C> E;
 //typedef cphstl::pairing_heap_policy_strict<V, C, A, E> POL;
-//typedef cphstl::pairing_heap_policy_lazy_insert<V, C, A, E> POL;
-typedef cphstl::pairing_heap_policy_lazy_increase<V, C, A, E> POL;
+typedef cphstl::pairing_heap_policy_lazy_insert<V, C, A, E> POL;
+//typedef cphstl::pairing_heap_policy_lazy_increase<V, C, A, E> POL;
 typedef cphstl::pairing_heap_framework<V, POL, C, A, E> PQ;
 typedef cphstl::meldable_priority_queue<V, C, A, E, PQ> Q;
 #endif
@@ -245,7 +245,7 @@ int main() {
 	// END reading dijkstra.dat   }}}
     stop = std::clock();
     running_time = double(stop - start)/double(CLOCKS_PER_SEC);
-	printf("Read %d vertices and %d edges in %f from %s.\n", vertex_list.size(), edges, running_time, GRAPHFILE);
+	printf("Read %ld vertices and %d edges in %f from %s.\n", vertex_list.size(), edges, running_time, GRAPHFILE);
 
     start = std::clock();
 	int iter = 0;
@@ -279,9 +279,9 @@ int main() {
     stop = std::clock();
     running_time = double(stop - start)/double(CLOCKS_PER_SEC);
 	printf("Found single-source shortest paths in %f.\n", running_time);
-	printf("Used %d comparisons, %d increase ops and %d extract ops.\n", compCount, incrCount, vertex_list.size());
+	printf("Used %d comparisons, %d increase ops and %ld extract ops.\n", compCount, incrCount, vertex_list.size());
 
-	printf("Size of pqueue: %d\n", q.size());
+	printf("Size of pqueue: %ld\n", q.size());
 	printf("Result path:\n");
 
 	return 0;
