@@ -2,11 +2,11 @@
 \usepackage{amsmath}
 \usepackage{listings}
 \usepackage{listings}
-\usepackage{floatflt}
+
 \lstset{language=Haskell,basicstyle=\ttfamily}
-%\usepackage{beamerthemesplit}
-\usetheme{Szeged}
- 
+\usepackage{beamerthemesplit}
+\usetheme{Madrid}
+
 \title{Self-adjusting heaps}
 \subtitle{A comparison}
 \author{Johan Brinch \and Asser Femø}
@@ -24,13 +24,21 @@
 \begin{frame}
   \titlepage
 \end{frame}
- 
+
 \section{The Pairing Heap}
+
+\begin{frame}[fragile]
+\frametitle{Pairing Heap}
+\tableofcontents
+\end{frame}
+
 \subsection{Overview}
 \begin{frame}[fragile]
 \frametitle{Pairing Heap}
 
+\begin{center}
 \includegraphics[width=7cm]{../pairing-heap-slides/fig1.png}
+\end{center}
 
 \end{frame}
 
@@ -51,28 +59,34 @@ back together
 
 \begin{frame}
 \frametitle{Child-sibling representation}
+\begin{center}
 \includegraphics[width=5cm]{../pairing-heap-slides/fig3.png}
+\end{center}
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Running times}
+\subsection{Running Time}
+\frametitle{Running Time}
 
-\textbf{find-min}, \textbf{insert}, \textbf{meld} and \textbf{decrease-key} 
-run in $O(1)$ worst-case time.
-
-\textbf{delete-min} and \textbf{delete} run in worst case $\Theta(n)$ time but
-can be improved to $O(\log n)$ amortized time by two-pass or multipass linking.
+\begin{itemize}
+\item \textbf{find-min}, \textbf{insert}, \textbf{meld} and \textbf{decrease-key}:
+  $O(1)$ worst-case time.
+\item \textbf{delete-min} and \textbf{delete}: $\Theta(n)$ worst case
+  time.\\ Can be improved to $O(\log n)$ amortized time by two-pass or multipass linking.
+\end{itemize}
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Variants}
+\frametitle{Variations}
+\frametitle{Variations}
 
 \textbf{Stasko-Vitter Lazy Insertion}
 
-Insert into auxiliary buffer. After \textbf{delete-min} multipass link the
-buffer contents and link with main tree.
+Insert new nodes into auxiliary buffer. \\
+After \textbf{delete-min} a multipass strategy links the buffer
+nodes to one tree and links this to the main tree.\\
 
 Improves \textbf{insert} to amortized $O(1)$ time.
 
@@ -83,15 +97,35 @@ Improves \textbf{insert} to amortized $O(1)$ time.
 
 \textbf{Elmasry Costless Meld}\\
 
-\textbf{decrease-key} adds node to auxiliary decrease buffer. Following
-\textbf{meld} and \textbf{delete-min} clean up the decrease buffer cutting
-decreased nodes from the main tree, combining and linking them back into the
-main tree.
+\textbf{decrease-key} adds node to auxiliary decrease buffer.
+Clean-up after \textbf{meld} and \textbf{delete-min} operations
+flushes the decrease buffer by:
+\begin{enumerate}
+\item cutting the decreased nodes from the main tree
+\item combining them into one tree
+\item linking this tree to the main tree
+\end{enumerate}
 
-Improves \textbf{decrease-key} $O(\log \log n)$ amortized time and \textbf{meld}
+Improves to \textbf{decrease-key} $O(\log \log n)$ amortized time and \textbf{meld}
 to zero amortized time.
 
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Variants}
+
+\textbf{Combining Cost-less Meld with Lazy Insertion}\\
+
+\begin{enumerate}
+\item New nodes are handled as inserted lazily
+\item New nodes are handled as increased nodes
+\item Increasing a node on the insert-list moves it to the increase list
+\end{enumerate}
+
+\end{frame}
+
+
 
 \begin{frame}
 \frametitle{Amortized running times}
@@ -109,6 +143,119 @@ Costless meld & $O(1)$ & $O(\log n)$ & $O(\log \log n)$ & zero \\
 \end{tabular}
 
 \end{frame}
- 
+
+
+\begin{frame}
+\subsection{Development Process}
+\frametitle{Development Process}
+
+\begin{itemize}
+\item CPH-STL, C++
+\item Pairing heap framework
+\item Existing Meldable heap framework
+\item Interface changes
+\end{itemize}
+
+
+
+\end{frame}
+
+\begin{frame}
+\subsection{Benchmarking}
+\frametitle{Benchmarking}
+
+
+
+\textbf{CPH-STL Benchmarking Suite:}
+\begin{itemize}
+\item pop
+\item push
+\item erase
+\item increase
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Benchmarking}
+
+\textbf{Custom Tests:}
+\begin{itemize}
+\item Increase2:\\
+  push $N$ nodes\\
+  repeat: push $N$ nodes, increase them in order, pop all of them
+\item Increase3: \\
+  repeat: push $N$ nodes, increase them randomly, pop $1$ node
+\item Increase4: \\
+  push $N$ nodes \\
+  repeat: increase $1000 \log N$ nodes, pop $1$ node
+\item Dijkstra: \\
+  Compute one to all shortest path in graph (single-source)
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Test: Push}
+\includegraphics[width=.85\textwidth]{../graphs/push.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Pop}
+\includegraphics[width=.85\textwidth]{../graphs/pop.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Erase}
+\includegraphics[width=.85\textwidth]{../graphs/erase.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Increase}
+\includegraphics[width=.85\textwidth]{../graphs/increase.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Increase2}
+\includegraphics[width=.85\textwidth]{../graphs/increase2.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Increase3}
+\includegraphics[width=.85\textwidth]{../graphs/increase3.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Increase4}
+\includegraphics[width=.85\textwidth]{../graphs/increase4.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Dijkstra}
+\includegraphics[width=.85\textwidth]{../graphs/dijk1.pdf}
+\end{frame}
+\begin{frame}
+\frametitle{Test: Dijkstra}
+\includegraphics[width=.85\textwidth]{../graphs/dijk2.pdf}
+\end{frame}
+
+\begin{frame}
+
+
+\subsection{Conclusion}
+\frametitle{Conclusion}
+
+\textbf{What we concluded:}
+\begin{itemize}
+\item Synthetic tests can be misleading
+\item Pairing heaps are generally a well-performing structure
+\item Variations of pairing heaps seems to perform equally
+\end{itemize}
+
+\textbf{Future work:}
+\begin{itemize}
+\item Better benchmarks
+\item Larger instances
+\item CPU-timings and profiling
+\end{itemize}
+
+\end{frame}
+
+
 \end{document}
- 
+
